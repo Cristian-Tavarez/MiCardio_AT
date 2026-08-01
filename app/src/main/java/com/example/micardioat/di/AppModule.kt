@@ -41,4 +41,16 @@ object AppModule {
     fun provideDeletePacienteUseCase(repository: PacienteCardiologiaRepository): DeletePacienteUseCase {
         return DeletePacienteUseCase(repository)
     }
+
+    @Provides
+    @Singleton
+    fun provideLoginUseCase(): LoginUseCase {
+        return LoginUseCase()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRegisterUseCase(): RegisterUseCase {
+        return RegisterUseCase()
+    }
 }
