@@ -6,4 +6,6 @@ data class PacienteCardiologia(
     val edad: Int = 0,
     val diagnostico: String = "",
     val presionArterial: String = ""
+    
+    
 )
