@@ -2,6 +2,7 @@ package com.example.micardioat.di
 
 import android.content.Context
 import androidx.room.Room
+`import com.example.micardioat.data.dao.PacienteDao
 import com.example.micardioat.data.dao.UsuarioDao
 import com.example.micardioat.data.database.AppDatabase
 import com.example.micardioat.data.repository.PacienteCardiologiaRepository
@@ -35,8 +36,14 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun providePacienteCardiologiaRepository(): PacienteCardiologiaRepository {
-        return PacienteCardiologiaRepository()
+    fun providePacienteDao(appDatabase: AppDatabase): PacienteDao {
+        return appDatabase.pacienteDao()
+    }
+
+    @Provides
+    @Singleton
+    fun providePacienteCardiologiaRepository(dao: PacienteDao): PacienteCardiologiaRepository {
+        return PacienteCardiologiaRepository(dao)
     }
 
     @Provides
