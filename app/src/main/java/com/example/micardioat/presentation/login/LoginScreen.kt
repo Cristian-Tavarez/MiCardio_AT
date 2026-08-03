@@ -144,7 +144,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(16.dp))
         TextButton(onClick = onNavigateToRegister) {
             Text(
-                text = "¿No tienes cuenta? Regístrate aquí",
+                text = "¿No tienes cuenta? Regístrate aquí!",
                 color = tealColor,
                 fontSize = 14.sp
             )
