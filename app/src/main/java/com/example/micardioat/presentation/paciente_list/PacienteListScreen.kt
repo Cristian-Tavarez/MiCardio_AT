@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -16,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.micardioat.domain.model.PacienteCardiologia
 
@@ -30,16 +32,14 @@ fun PacienteListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Pacientes de Cardiología", color = Color.Black) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                )
+                title = { Text("Pacientes de Cardiología", color = Color.Black, fontWeight = FontWeight.Bold) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { onNavigateToDetail(null) },
-                containerColor = MaterialTheme.colorScheme.primary,
+                containerColor = Color(0xFFA5C0FF),
                 contentColor = Color.White
             ) {
                 Icon(
@@ -83,6 +83,7 @@ fun PacienteListScreen(
         }
     }
 }
+
 @Composable
 fun PacienteItem(
     paciente: PacienteCardiologia,
@@ -92,29 +93,31 @@ fun PacienteItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF13131A))
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(20.dp)
         ) {
             Text(
                 text = paciente.nombre,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = "Diagnóstico: ${paciente.diagnostico}",
-                style = MaterialTheme.typography.bodyMedium
+                text = "Diagnóstico: ${if (paciente.diagnostico.isNotBlank()) paciente.diagnostico else paciente.motivoConsulta}",
+                fontSize = 14.sp,
+                color = Color(0xFFE0E0E0)
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "Edad: ${paciente.edad} | Presión: ${paciente.presionArterial}",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray
+                fontSize = 12.sp,
+                color = Color(0xFFA0A0A0)
             )
         }
     }
