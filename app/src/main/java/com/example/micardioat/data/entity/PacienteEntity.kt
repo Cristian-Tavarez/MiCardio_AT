@@ -11,7 +11,21 @@ data class PacienteEntity(
     val nombre: String,
     val edad: Int,
     val diagnostico: String,
-    val presionArterial: String
+    val presionArterial: String,
+    val sexo: String = "",
+    val motivoConsulta: String = "",
+    val fc: String = "",
+    val fr: String = "",
+    val antecedentesQuirurgicos: String = "",
+    val antecedentesPatologicos: String = "",
+    val tratamiento: String = "",
+    val alergias: String = "",
+    val hb: String = "",
+    val hct: String = "",
+    val glicemia: String = "",
+    val colTotal: String = "",
+    val fevi: String = "",
+    val plan: String = ""
 )
 
 fun PacienteEntity.toDomain(): PacienteCardiologia {
@@ -20,7 +34,21 @@ fun PacienteEntity.toDomain(): PacienteCardiologia {
         nombre = nombre,
         edad = edad,
         diagnostico = diagnostico,
-        presionArterial = presionArterial
+        presionArterial = presionArterial,
+        sexo = sexo,
+        motivoConsulta = motivoConsulta,
+        fc = fc,
+        fr = fr,
+        antecedentesQuirurgicos = antecedentesQuirurgicos,
+        antecedentesPatologicos = antecedentesPatologicos,
+        tratamiento = tratamiento,
+        alergias = alergias,
+        hb = hb,
+        hct = hct,
+        glicemia = glicemia,
+        colTotal = colTotal,
+        fevi = fevi,
+        plan = plan
     )
 }
 
@@ -30,6 +58,20 @@ fun PacienteCardiologia.toEntity(): PacienteEntity {
         nombre = nombre,
         edad = edad,
         diagnostico = diagnostico,
-        presionArterial = presionArterial
+        presionArterial = presionArterial,
+        sexo = sexo,
+        motivoConsulta = motivoConsulta,
+        fc = fc,
+        fr = fr,
+        antecedentesQuirurgicos = antecedentesQuirurgicos,
+        antecedentesPatologicos = antecedentesPatologicos,
+        tratamiento = tratamiento,
+        alergias = alergias,
+        hb = hb,
+        hct = hct,
+        glicemia = glicemia,
+        colTotal = colTotal,
+        fevi = fevi,
+        plan = plan
     )
 }
