@@ -47,6 +47,11 @@ fun AppNavigation() {
             PacienteListScreen(
                 onNavigateToDetail = { id ->
                     navController.navigate(Screen.PacienteEdit(pacienteId = id))
+                },
+                onLogout = {
+                    navController.navigate(Screen.Login) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             )
         }
@@ -58,7 +63,5 @@ fun AppNavigation() {
                 }
             )
         }
-
-
     }
 }
