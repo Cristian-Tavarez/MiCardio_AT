@@ -104,4 +104,9 @@ dependencies {
     // Navigation 3
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
+
+    //robolectric
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.13")
+
 }
