@@ -25,7 +25,8 @@ data class PacienteEntity(
     val glicemia: String = "",
     val colTotal: String = "",
     val fevi: String = "",
-    val plan: String = ""
+    val plan: String = "",
+    val fechaCita: Long? = null
 )
 
 fun PacienteEntity.toDomain(): PacienteCardiologia {
@@ -48,7 +49,8 @@ fun PacienteEntity.toDomain(): PacienteCardiologia {
         glicemia = glicemia,
         colTotal = colTotal,
         fevi = fevi,
-        plan = plan
+        plan = plan,
+        fechaCita = fechaCita
     )
 }
 
@@ -72,6 +74,7 @@ fun PacienteCardiologia.toEntity(): PacienteEntity {
         glicemia = glicemia,
         colTotal = colTotal,
         fevi = fevi,
-        plan = plan
+        plan = plan,
+        fechaCita = fechaCita
     )
 }

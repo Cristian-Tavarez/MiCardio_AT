@@ -45,6 +45,7 @@ class PacienteAddViewModel @Inject constructor(
     var colTotal by mutableStateOf("")
     var fevi by mutableStateOf("")
     var plan by mutableStateOf("")
+    var fechaCita by mutableStateOf<Long?>(null)
 
     init {
         savedStateHandle.get<Int>("pacienteId")?.let { pacienteId ->
@@ -80,6 +81,7 @@ class PacienteAddViewModel @Inject constructor(
                             colTotal = paciente.colTotal
                             fevi = paciente.fevi
                             plan = paciente.plan
+                            fechaCita = paciente.fechaCita
                         }
                     }
                     is Resource.Error -> { }
@@ -110,7 +112,8 @@ class PacienteAddViewModel @Inject constructor(
                 glicemia = glicemia,
                 colTotal = colTotal,
                 fevi = fevi,
-                plan = plan
+                plan = plan,
+                fechaCita = fechaCita
             )
 
             savePacienteUseCase(paciente).collect { result ->

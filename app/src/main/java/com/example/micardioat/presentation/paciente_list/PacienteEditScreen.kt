@@ -2,6 +2,7 @@ package com.example.micardioat.presentation.paciente_list
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,9 +10,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -21,6 +23,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,9 +43,47 @@ fun PacienteEditScreen(
         unfocusedLabelColor = Color.DarkGray,
         focusedBorderColor = tealColor,
         unfocusedBorderColor = Color.Gray,
-        cursorColor = tealColor
+        cursorColor = tealColor,
+        disabledTextColor = Color.Black,
+        disabledBorderColor = Color.Gray,
+        disabledLabelColor = Color.DarkGray,
+        disabledLeadingIconColor = Color.Black
     )
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = viewModel.fechaCita ?: System.currentTimeMillis()
+    )
+    val dateFormatter = remember {
+        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).apply {
+            timeZone = java.util.TimeZone.getTimeZone("UTC")
+        }
+    }
+    val dateString = viewModel.fechaCita?.let { dateFormatter.format(Date(it)) } ?: "Seleccionar fecha"
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = viewModel.fechaCita ?: System.currentTimeMillis()
+        )
 
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.fechaCita = datePickerState.selectedDateMillis
+                    showDatePicker = false
+                }) {
+                    Text("Aceptar", color = tealColor)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancelar", color = Color.Gray)
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -216,6 +259,22 @@ fun PacienteEditScreen(
                 colors = inputColors,
                 textStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
             )
+            SectionHeader("PROGRAMACIÓN DE CITA")
+
+            Box(modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true }) {
+                OutlinedTextField(
+                    value = dateString,
+                    onValueChange = {},
+                    label = { Text("Fecha de Cita") },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = false,
+                    leadingIcon = {
+                        Icon(Icons.Default.DateRange, contentDescription = "Icono de calendario")
+                    },
+                    colors = inputColors,
+                    textStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
+                )
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -242,7 +301,6 @@ fun PacienteEditScreen(
         }
     }
 }
-
 @Composable
 private fun SectionHeader(title: String) {
     Text(
