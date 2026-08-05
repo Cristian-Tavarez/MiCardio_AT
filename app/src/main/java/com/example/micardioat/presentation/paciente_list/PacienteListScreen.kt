@@ -4,24 +4,27 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.micardioat.domain.model.PacienteCardiologia
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PacienteListScreen(
     viewModel: PacienteListViewModel = hiltViewModel(),
@@ -29,52 +32,94 @@ fun PacienteListScreen(
 ) {
     val pacientes by viewModel.pacientes.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Pacientes de Cardiología", color = Color.Black, fontWeight = FontWeight.Bold) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { onNavigateToDetail(null) },
-                containerColor = Color(0xFFA5C0FF),
-                contentColor = Color.White
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Agregar Paciente"
-                )
-            }
+    val darkBackground = Color(0xFF1C1D2A)
+    val cardBlue = Color(0xFF5D9CFF)
+    var selectedDateMillis by remember { mutableStateOf(System.currentTimeMillis()) }
+    val filteredPacientes = pacientes.filter { paciente ->
+        paciente.fechaCita != null && isSameDay(paciente.fechaCita, selectedDateMillis)
+    }
+    val cardDateFormatter = remember {
+        SimpleDateFormat("dd\nMMM", Locale.getDefault()).apply {
+            timeZone = java.util.TimeZone.getTimeZone("UTC")
         }
-    ) { paddingValues ->
-        if (pacientes.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .background(Color.White),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "No hay pacientes registrados",
-                    color = Color.Gray
-                )
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .background(Color.White),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(pacientes) { paciente ->
-                    PacienteItem(
-                        paciente = paciente,
-                        onClick = {
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(darkBackground)
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(Date()).uppercase(),
+                color = cardBlue,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Buscar",
+                tint = Color.White
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+        HorizontalCalendar(
+            selectedDateMillis = selectedDateMillis,
+            onDateSelected = { newDate ->
+                selectedDateMillis = newDate
+            },
+            accentColor = cardBlue
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Mis Citas", color = Color.White, fontSize = 16.sp)
+            Text(
+                text = "+ Añadir",
+                color = cardBlue,
+                fontSize = 16.sp,
+                modifier = Modifier.clickable {
+                    onNavigateToDetail(null)
+                }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            if (filteredPacientes.isEmpty()) {
+                item {
+                    Text(
+                        text = "No hay citas programadas para este día.",
+                        color = Color.Gray,
+                        modifier = Modifier.padding(top = 16.dp)
+                    )
+                }
+            } else {
+                items(filteredPacientes) { paciente ->
+                    val displayDate = paciente.fechaCita?.let {
+                        cardDateFormatter.format(Date(it)).uppercase()
+                    } ?: "SIN\nFECHA"
+
+                    AppointmentCard(
+                        date = displayDate,
+                        color = cardBlue,
+                        name = paciente.nombre,
+                        details = "Diagnóstico: ${if (paciente.diagnostico.isNotBlank()) paciente.diagnostico else paciente.motivoConsulta}",
+                        modifier = Modifier.clickable {
                             onNavigateToDetail(paciente.pacienteId)
                         }
                     )
@@ -85,40 +130,115 @@ fun PacienteListScreen(
 }
 
 @Composable
-fun PacienteItem(
-    paciente: PacienteCardiologia,
-    onClick: () -> Unit
+fun HorizontalCalendar(
+    selectedDateMillis: Long,
+    onDateSelected: (Long) -> Unit,
+    accentColor: Color
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF13131A))
+    val days = remember {
+        val calendar = Calendar.getInstance()
+        val list = mutableListOf<Long>()
+        for (i in 0..30) {
+            list.add(calendar.timeInMillis)
+            calendar.add(Calendar.DAY_OF_YEAR, 1)
+        }
+        list
+    }
+
+    val dayNameFormatter = remember { SimpleDateFormat("EEE", Locale.getDefault()) }
+    val dayNumberFormatter = remember { SimpleDateFormat("dd", Locale.getDefault()) }
+
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Column(
+        items(days) { dayMillis ->
+            val isSelected = isSameDay(dayMillis, selectedDateMillis)
+            val backgroundColor = if (isSelected) accentColor else Color(0xFF262837)
+            val textColor = if (isSelected) Color.White else Color.Gray
+
+            Column(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(backgroundColor)
+                    .clickable { onDateSelected(dayMillis) }
+                    .padding(vertical = 16.dp, horizontal = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = dayNameFormatter.format(Date(dayMillis)).uppercase(),
+                    color = textColor,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = dayNumberFormatter.format(Date(dayMillis)),
+                    color = if (isSelected) Color.White else Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AppointmentCard(
+    date: String,
+    color: Color,
+    name: String,
+    details: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Color(0xFF262837), RoundedCornerShape(12.dp))
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
+                .size(64.dp)
+                .background(color, RoundedCornerShape(12.dp)),
+            contentAlignment = Alignment.Center
         ) {
             Text(
-                text = paciente.nombre,
-                fontSize = 22.sp,
+                text = date,
+                color = Color.White,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                fontSize = 14.sp
             )
-            Spacer(modifier = Modifier.height(6.dp))
+        }
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Column {
             Text(
-                text = "Diagnóstico: ${if (paciente.diagnostico.isNotBlank()) paciente.diagnostico else paciente.motivoConsulta}",
-                fontSize = 14.sp,
-                color = Color(0xFFE0E0E0)
+                text = name,
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Edad: ${paciente.edad} | Presión: ${paciente.presionArterial}",
-                fontSize = 12.sp,
-                color = Color(0xFFA0A0A0)
+                text = details,
+                color = Color.Gray,
+                fontSize = 12.sp
             )
         }
     }
+}
+
+fun isSameDay(utcMillis: Long, localMillis: Long): Boolean {
+    val utcFormatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).apply {
+        timeZone = java.util.TimeZone.getTimeZone("UTC")
+    }
+    val dateFromDb = utcFormatter.format(java.util.Date(utcMillis))
+
+    val localFormatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+    val dateFromCalendar = localFormatter.format(java.util.Date(localMillis))
+
+    return dateFromDb == dateFromCalendar
 }
