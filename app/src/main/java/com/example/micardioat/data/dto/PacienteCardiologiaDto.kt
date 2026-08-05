@@ -9,7 +9,8 @@ data class PacienteCardiologiaDto(
     val nombre: String = "",
     val edad: Int = 0,
     val diagnostico: String = "",
-    val presionArterial: String = ""
+    val presionArterial: String = "",
+    val fechaCita: Long? = null
 )
 
 fun PacienteCardiologiaDto.toDomain(): PacienteCardiologia {
@@ -18,7 +19,8 @@ fun PacienteCardiologiaDto.toDomain(): PacienteCardiologia {
         nombre = nombre,
         edad = edad,
         diagnostico = diagnostico,
-        presionArterial = presionArterial
+        presionArterial = presionArterial,
+        fechaCita = fechaCita
     )
 }
 
@@ -28,6 +30,7 @@ fun PacienteCardiologia.toDto(): PacienteCardiologiaDto {
         nombre = nombre,
         edad = edad,
         diagnostico = diagnostico,
-        presionArterial = presionArterial
+        presionArterial = presionArterial,
+        fechaCita = fechaCita
     )
 }

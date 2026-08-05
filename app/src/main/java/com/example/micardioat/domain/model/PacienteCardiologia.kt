@@ -19,5 +19,6 @@ data class PacienteCardiologia(
     val glicemia: String = "",
     val colTotal: String = "",
     val fevi: String = "",
-    val plan: String = ""
+    val plan: String = "",
+    val fechaCita: Long? = null
 )
