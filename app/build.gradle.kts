@@ -104,4 +104,10 @@ dependencies {
     // Navigation 3
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
+
+
+
+
+    //Turbine
+    testImplementation("app.cash.turbine:turbine:1.1.0")
 }
