@@ -106,8 +106,6 @@ dependencies {
     implementation(libs.androidx.navigation3.ui)
 
 
-
-
     //Turbine
-    testImplementation("app.cash.turbine:turbine:1.1.0")
+    testImplementation("app.cash.turbine:turbine:1.2.1")
 }
