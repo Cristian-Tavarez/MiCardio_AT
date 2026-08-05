@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,14 +25,16 @@ import com.example.micardioat.domain.model.PacienteCardiologia
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
-import java.util.Locale
 
 @Composable
 fun PacienteListScreen(
     viewModel: PacienteListViewModel = hiltViewModel(),
-    onNavigateToDetail: (Int?) -> Unit = {}
+    onNavigateToDetail: (Int?) -> Unit = {},
+    onLogout: () -> Unit = {}
 ) {
     val pacientes by viewModel.pacientes.collectAsState()
+
+    val currentLocale = LocalConfiguration.current.locales[0]
 
     val darkBackground = Color(0xFF1C1D2A)
     val cardBlue = Color(0xFF5D9CFF)
@@ -38,8 +42,8 @@ fun PacienteListScreen(
     val filteredPacientes = pacientes.filter { paciente ->
         paciente.fechaCita != null && isSameDay(paciente.fechaCita, selectedDateMillis)
     }
-    val cardDateFormatter = remember {
-        SimpleDateFormat("dd\nMMM", Locale.getDefault()).apply {
+    val cardDateFormatter = remember(currentLocale) {
+        SimpleDateFormat("dd\nMMM", currentLocale).apply {
             timeZone = java.util.TimeZone.getTimeZone("UTC")
         }
     }
@@ -55,16 +59,29 @@ fun PacienteListScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(Date()).uppercase(),
+                text = SimpleDateFormat("MMMM yyyy", currentLocale).format(Date()).uppercase(),
                 color = cardBlue,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Buscar",
-                tint = Color.White
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { /* Acción de búsqueda */ }) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Buscar",
+                        tint = Color.White
+                    )
+                }
+                IconButton(onClick = onLogout) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                        contentDescription = "Cerrar Sesión",
+                        tint = Color(0xFFFF5252)
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -135,6 +152,8 @@ fun HorizontalCalendar(
     onDateSelected: (Long) -> Unit,
     accentColor: Color
 ) {
+    val currentLocale = LocalConfiguration.current.locales[0]
+
     val days = remember {
         val calendar = Calendar.getInstance()
         val list = mutableListOf<Long>()
@@ -145,8 +164,8 @@ fun HorizontalCalendar(
         list
     }
 
-    val dayNameFormatter = remember { SimpleDateFormat("EEE", Locale.getDefault()) }
-    val dayNumberFormatter = remember { SimpleDateFormat("dd", Locale.getDefault()) }
+    val dayNameFormatter = remember(currentLocale) { SimpleDateFormat("EEE", currentLocale) }
+    val dayNumberFormatter = remember(currentLocale) { SimpleDateFormat("dd", currentLocale) }
 
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -174,7 +193,7 @@ fun HorizontalCalendar(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = dayNumberFormatter.format(Date(dayMillis)),
-                    color = if (isSelected) Color.White else Color.White,
+                    color = Color.White,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -232,13 +251,13 @@ fun AppointmentCard(
 }
 
 fun isSameDay(utcMillis: Long, localMillis: Long): Boolean {
-    val utcFormatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).apply {
+    val utcFormatter = SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).apply {
         timeZone = java.util.TimeZone.getTimeZone("UTC")
     }
-    val dateFromDb = utcFormatter.format(java.util.Date(utcMillis))
+    val dateFromDb = utcFormatter.format(Date(utcMillis))
 
-    val localFormatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-    val dateFromCalendar = localFormatter.format(java.util.Date(localMillis))
+    val localFormatter = SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+    val dateFromCalendar = localFormatter.format(Date(localMillis))
 
     return dateFromDb == dateFromCalendar
 }
