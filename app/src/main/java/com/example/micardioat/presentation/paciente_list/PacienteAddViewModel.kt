@@ -91,16 +91,40 @@ class PacienteAddViewModel @Inject constructor(
         }
     }
 
-    fun savePaciente(onSuccess: () -> Unit) {
+    fun savePaciente(
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        if (nombre.trim().isEmpty()) {
+            onError("El nombre es obligatorio")
+            return
+        }
+        if (edad.trim().isEmpty()) {
+            onError("La edad es obligatoria")
+            return
+        }
+        if (sexo.trim().isEmpty()) {
+            onError("El sexo es obligatorio")
+            return
+        }
+        if (motivoConsulta.trim().isEmpty()) {
+            onError("El motivo de consulta es obligatorio")
+            return
+        }
+        if (fechaCita == null) {
+            onError("Debe seleccionar una fecha de cita")
+            return
+        }
+
         viewModelScope.launch {
             val paciente = PacienteCardiologia(
                 pacienteId = currentPacienteId,
-                nombre = nombre,
-                edad = edad.toIntOrNull() ?: 0,
+                nombre = nombre.trim(),
+                edad = edad.trim().toIntOrNull() ?: 0,
                 diagnostico = diagnostico,
                 presionArterial = presionArterial,
-                sexo = sexo,
-                motivoConsulta = motivoConsulta,
+                sexo = sexo.trim(),
+                motivoConsulta = motivoConsulta.trim(),
                 fc = fc,
                 fr = fr,
                 antecedentesQuirurgicos = antecedentesQuirurgicos,
@@ -119,6 +143,8 @@ class PacienteAddViewModel @Inject constructor(
             savePacienteUseCase(paciente).collect { result ->
                 if (result is Resource.Success) {
                     onSuccess()
+                } else if (result is Resource.Error) {
+                    onError(result.message ?: "Ocurrió un error al guardar")
                 }
             }
         }
