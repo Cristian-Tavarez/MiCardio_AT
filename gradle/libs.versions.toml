@@ -13,6 +13,8 @@ ksp= "2.3.2"
 playServicesTasks = "18.2.0"
 hilt = "2.54"
 animatedVectorDrawable = "1.2.0"
+robolectric = "4.16.1"
+robolectricVersion = "4.13"
 room = "2.8.4"
 coil = "3.0.4"
 kotlinSerializationJson = "1.7.3"
@@ -39,6 +41,8 @@ androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-te
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+robolectric-v413 = { module = "org.robolectric:robolectric", version.ref = "robolectricVersion" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
