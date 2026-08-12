@@ -8,20 +8,24 @@ import com.example.micardioat.presentation.login.LoginScreen
 import com.example.micardioat.presentation.paciente_list.PacienteEditScreen
 import com.example.micardioat.presentation.paciente_list.PacienteListScreen
 import com.example.micardioat.presentation.register.RegisterScreen
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
 
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    val startDestination: Screen = if (currentUser != null) Screen.PacienteList else Screen.Login
+
     NavHost(
         navController = navController,
-        startDestination = Screen.Login
+        startDestination = startDestination
     ) {
         composable<Screen.Login> {
             LoginScreen(
                 onLoginSuccess = {
                     navController.navigate(Screen.PacienteList) {
-                        popUpTo(Screen.Login) { inclusive = true }
+                        popUpTo<Screen.Login> { inclusive = true }
                     }
                 },
                 onNavigateToRegister = {
@@ -34,7 +38,7 @@ fun AppNavigation() {
             RegisterScreen(
                 onRegisterSuccess = {
                     navController.navigate(Screen.PacienteList) {
-                        popUpTo(Screen.Login) { inclusive = true }
+                        popUpTo<Screen.Login> { inclusive = true }
                     }
                 },
                 onNavigateBack = {
@@ -49,6 +53,7 @@ fun AppNavigation() {
                     navController.navigate(Screen.PacienteEdit(pacienteId = id))
                 },
                 onLogout = {
+                    FirebaseAuth.getInstance().signOut()
                     navController.navigate(Screen.Login) {
                         popUpTo(0) { inclusive = true }
                     }
