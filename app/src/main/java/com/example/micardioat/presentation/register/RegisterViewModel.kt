@@ -4,19 +4,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.micardioat.domain.use_case.RegisterUseCase
 import com.example.micardioat.utils.Resource
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    private val registerUseCase: RegisterUseCase
+    private val auth: FirebaseAuth
 ) : ViewModel() {
 
     var usuario by mutableStateOf("")
@@ -27,10 +25,33 @@ class RegisterViewModel @Inject constructor(
     val registerState: StateFlow<Resource<Boolean>?> = _registerState.asStateFlow()
 
     fun onRegister() {
-        viewModelScope.launch {
-            registerUseCase(usuario, clave, confirmarClave).collect { result ->
-                _registerState.value = result
-            }
+        val email = usuario.trim()
+
+        if (email.isBlank() || clave.isBlank() || confirmarClave.isBlank()) {
+            _registerState.value = Resource.Error("Por favor completa todos los campos")
+            return
         }
+
+        if (clave != confirmarClave) {
+            _registerState.value = Resource.Error("Las contraseñas no coinciden")
+            return
+        }
+
+        if (clave.length < 6) {
+            _registerState.value = Resource.Error("La contraseña debe tener al menos 6 caracteres")
+            return
+        }
+
+        _registerState.value = Resource.Loading()
+
+        auth.createUserWithEmailAndPassword(email, clave)
+            .addOnSuccessListener {
+                _registerState.value = Resource.Success(true)
+            }
+            .addOnFailureListener { exception ->
+                _registerState.value = Resource.Error(
+                    exception.localizedMessage ?: "Error al registrar el usuario"
+                )
+            }
     }
 }
