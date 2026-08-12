@@ -7,6 +7,7 @@ import com.example.micardioat.data.dao.UsuarioDao
 import com.example.micardioat.data.database.AppDatabase
 import com.example.micardioat.data.repository.PacienteCardiologiaRepository
 import com.example.micardioat.domain.use_case.*
+import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -80,5 +81,11 @@ object AppModule {
     @Singleton
     fun provideRegisterUseCase(usuarioDao: UsuarioDao): RegisterUseCase {
         return RegisterUseCase(usuarioDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseAuth(): FirebaseAuth {
+        return FirebaseAuth.getInstance()
     }
 }
