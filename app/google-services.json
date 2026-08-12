@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "518577123526",
+    "project_id": "micardioat",
+    "storage_bucket": "micardioat.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:518577123526:android:62c203fde5a5820bb3e7c7",
+        "android_client_info": {
+          "package_name": "com.example.micardioat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFYSL_cEIPJppDsSJfDk9X3Zrop00Y5Pc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
