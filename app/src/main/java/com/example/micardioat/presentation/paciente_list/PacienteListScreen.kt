@@ -146,22 +146,13 @@ fun PacienteListScreen(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = if (isSearchActive && searchQuery.isNotBlank()) "Resultados de búsqueda" else "Mis Citas",
+                text = if (isSearchActive && searchQuery.isNotBlank()) "Resultados de búsqueda" else "Citas",
                 color = textPrimary,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = "+ Añadir",
-                color = accentTeal,
-                fontSize = 16.sp,
-                modifier = Modifier.clickable {
-                    onNavigateToDetail(null)
-                }
             )
         }
 
