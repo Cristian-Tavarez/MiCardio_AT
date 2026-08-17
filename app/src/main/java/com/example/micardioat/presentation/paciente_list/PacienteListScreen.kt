@@ -19,9 +19,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.micardioat.domain.model.PacienteCardiologia
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -32,7 +35,21 @@ fun PacienteListScreen(
     onNavigateToDetail: (Int?) -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
-    val pacientes by viewModel.pacientes.collectAsState()
+    val pacientes by viewModel.pacientes.collectAsStateWithLifecycle()
+
+    PacienteListBody(
+        pacientes = pacientes,
+        onNavigateToDetail = onNavigateToDetail,
+        onLogout = onLogout
+    )
+}
+
+@Composable
+fun PacienteListBody(
+    pacientes: List<PacienteCardiologia>,
+    onNavigateToDetail: (Int?) -> Unit,
+    onLogout: () -> Unit
+) {
     val currentLocale = LocalConfiguration.current.locales[0]
 
     val lightBackground = Color.White
@@ -317,4 +334,35 @@ fun isSameDay(utcMillis: Long, localMillis: Long): Boolean {
     val dateFromCalendar = localFormatter.format(Date(localMillis))
 
     return dateFromDb == dateFromCalendar
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PacienteListBodyPreview() {
+    MaterialTheme {
+        PacienteListBody(
+            pacientes = listOf(
+                PacienteCardiologia(
+                    pacienteId = 1,
+                    nombre = "Juan Pérez",
+                    edad = 45,
+                    diagnostico = "Hipertensión Arterial",
+                    presionArterial = "120/80",
+                    motivoConsulta = "Evaluación cardiaca",
+                    fechaCita = System.currentTimeMillis()
+                ),
+                PacienteCardiologia(
+                    pacienteId = 2,
+                    nombre = "María Gómez",
+                    edad = 30,
+                    diagnostico = "Sin diagnóstico",
+                    presionArterial = "110/70",
+                    motivoConsulta = "Chequeo de rutina",
+                    fechaCita = System.currentTimeMillis()
+                )
+            ),
+            onNavigateToDetail = {},
+            onLogout = {}
+        )
+    }
 }
