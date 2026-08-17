@@ -210,7 +210,7 @@ fun HorizontalCalendar(
     val days = remember {
         val calendar = Calendar.getInstance()
         val list = mutableListOf<Long>()
-        for (i in 0..30) {
+        repeat(31) {
             list.add(calendar.timeInMillis)
             calendar.add(Calendar.DAY_OF_YEAR, 1)
         }
