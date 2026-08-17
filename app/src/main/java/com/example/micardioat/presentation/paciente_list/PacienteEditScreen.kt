@@ -21,24 +21,62 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PacienteEditScreen(
     viewModel: PacienteAddViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit = {}
 ) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    PacienteEditBody(
+        state = state,
+        onEvent = viewModel::onEvent,
+        onNavigateBack = onNavigateBack
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PacienteEditBody(
+    state: PacienteFormUiState,
+    onEvent: (PacienteFormUiEvent) -> Unit,
+    onNavigateBack: () -> Unit
+) {
     val context = LocalContext.current
     val tealColor = Color(0xFF006D77)
 
-    var isFormEditable by remember(viewModel.isEditing) { mutableStateOf(!viewModel.isEditing) }
+    var isFormEditable by remember(state.isNew) { mutableStateOf(state.isNew) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(state.saved, state.deleted) {
+        if (state.saved) {
+            Toast.makeText(
+                context,
+                if (!state.isNew) "Paciente actualizado" else "Paciente guardado",
+                Toast.LENGTH_SHORT
+            ).show()
+            onNavigateBack()
+        }
+        if (state.deleted) {
+            Toast.makeText(context, "Paciente eliminado correctamente", Toast.LENGTH_SHORT).show()
+            onNavigateBack()
+        }
+    }
+
+    LaunchedEffect(state.errorMessage) {
+        state.errorMessage?.let { error ->
+            Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     val inputColors = OutlinedTextFieldDefaults.colors(
         focusedTextColor = Color.Black,
@@ -61,7 +99,7 @@ fun PacienteEditScreen(
             timeZone = java.util.TimeZone.getTimeZone("UTC")
         }
     }
-    val dateString = viewModel.fechaCita?.let { dateFormatter.format(Date(it)) } ?: "Seleccionar fecha"
+    val dateString = state.fechaCita?.let { dateFormatter.format(Date(it)) } ?: "Seleccionar fecha"
 
     if (showDeleteDialog) {
         AlertDialog(
@@ -83,10 +121,7 @@ fun PacienteEditScreen(
                 TextButton(
                     onClick = {
                         showDeleteDialog = false
-                        viewModel.deletePaciente(onSuccess = {
-                            Toast.makeText(context, "Paciente eliminado correctamente", Toast.LENGTH_SHORT).show()
-                            onNavigateBack()
-                        })
+                        onEvent(PacienteFormUiEvent.Delete)
                     }
                 ) {
                     Text(
@@ -115,14 +150,14 @@ fun PacienteEditScreen(
 
     if (showDatePicker && isFormEditable) {
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = viewModel.fechaCita ?: System.currentTimeMillis()
+            initialSelectedDateMillis = state.fechaCita ?: System.currentTimeMillis()
         )
 
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
                 TextButton(onClick = {
-                    viewModel.fechaCita = datePickerState.selectedDateMillis
+                    onEvent(PacienteFormUiEvent.FechaCitaChanged(datePickerState.selectedDateMillis))
                     showDatePicker = false
                 }) {
                     Text("Aceptar", color = tealColor)
@@ -143,7 +178,7 @@ fun PacienteEditScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = if (viewModel.isEditing) "Ficha Médica del Paciente" else "Registrar Paciente",
+                        text = if (!state.isNew) "Ficha Médica del Paciente" else "Registrar Paciente",
                         color = Color.Black,
                         fontWeight = FontWeight.Bold
                     )
@@ -158,7 +193,7 @@ fun PacienteEditScreen(
                     }
                 },
                 actions = {
-                    if (viewModel.isEditing && !isFormEditable) {
+                    if (!state.isNew && !isFormEditable) {
                         IconButton(onClick = { isFormEditable = true }) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
@@ -168,7 +203,7 @@ fun PacienteEditScreen(
                         }
                     }
 
-                    if (viewModel.isEditing) {
+                    if (!state.isNew) {
                         IconButton(onClick = { showDeleteDialog = true }) {
                             Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color.Red)
                         }
@@ -190,9 +225,11 @@ fun PacienteEditScreen(
             SectionHeader("DATOS GENERALES")
 
             OutlinedTextField(
-                value = viewModel.nombre,
-                onValueChange = { viewModel.nombre = it },
+                value = state.nombre,
+                onValueChange = { onEvent(PacienteFormUiEvent.NombreChanged(it)) },
                 label = { Text("Nombre Completo *") },
+                isError = state.nombreError != null,
+                supportingText = { state.nombreError?.let { Text(it, color = Color.Red) } },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 readOnly = !isFormEditable,
@@ -203,9 +240,11 @@ fun PacienteEditScreen(
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
-                    value = viewModel.edad,
-                    onValueChange = { viewModel.edad = it },
+                    value = state.edad,
+                    onValueChange = { onEvent(PacienteFormUiEvent.EdadChanged(it)) },
                     label = { Text("Edad *") },
+                    isError = state.edadError != null,
+                    supportingText = { state.edadError?.let { Text(it, color = Color.Red) } },
                     modifier = Modifier.weight(1f),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
@@ -215,9 +254,11 @@ fun PacienteEditScreen(
                     textStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
                 )
                 OutlinedTextField(
-                    value = viewModel.sexo,
-                    onValueChange = { viewModel.sexo = it },
+                    value = state.sexo,
+                    onValueChange = { onEvent(PacienteFormUiEvent.SexoChanged(it)) },
                     label = { Text("Sexo *") },
+                    isError = state.sexoError != null,
+                    supportingText = { state.sexoError?.let { Text(it, color = Color.Red) } },
                     modifier = Modifier.weight(1f),
                     singleLine = true,
                     readOnly = !isFormEditable,
@@ -228,9 +269,11 @@ fun PacienteEditScreen(
             }
 
             OutlinedTextField(
-                value = viewModel.motivoConsulta,
-                onValueChange = { viewModel.motivoConsulta = it },
+                value = state.motivoConsulta,
+                onValueChange = { onEvent(PacienteFormUiEvent.MotivoConsultaChanged(it)) },
                 label = { Text("Motivo de Consulta / Diagnóstico *") },
+                isError = state.motivoConsultaError != null,
+                supportingText = { state.motivoConsultaError?.let { Text(it, color = Color.Red) } },
                 modifier = Modifier.fillMaxWidth(),
                 readOnly = !isFormEditable,
                 enabled = isFormEditable,
@@ -242,8 +285,8 @@ fun PacienteEditScreen(
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
-                    value = viewModel.presionArterial,
-                    onValueChange = { viewModel.presionArterial = it },
+                    value = state.presionArterial,
+                    onValueChange = { onEvent(PacienteFormUiEvent.PresionArterialChanged(it)) },
                     label = { Text("TA (Ej. 120/80)") },
                     modifier = Modifier.weight(1f),
                     singleLine = true,
@@ -253,8 +296,8 @@ fun PacienteEditScreen(
                     textStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
                 )
                 OutlinedTextField(
-                    value = viewModel.fc,
-                    onValueChange = { viewModel.fc = it },
+                    value = state.fc,
+                    onValueChange = { onEvent(PacienteFormUiEvent.FcChanged(it)) },
                     label = { Text("FC (Frec. Cardíaca)") },
                     modifier = Modifier.weight(1f),
                     singleLine = true,
@@ -268,8 +311,8 @@ fun PacienteEditScreen(
             SectionHeader("ANTECEDENTES Y TRATAMIENTO")
 
             OutlinedTextField(
-                value = viewModel.antecedentesPatologicos,
-                onValueChange = { viewModel.antecedentesPatologicos = it },
+                value = state.antecedentesPatologicos,
+                onValueChange = { onEvent(PacienteFormUiEvent.AntecedentesPatologicosChanged(it)) },
                 label = { Text("Antecedentes Patológicos") },
                 modifier = Modifier.fillMaxWidth(),
                 readOnly = !isFormEditable,
@@ -279,8 +322,8 @@ fun PacienteEditScreen(
             )
 
             OutlinedTextField(
-                value = viewModel.tratamiento,
-                onValueChange = { viewModel.tratamiento = it },
+                value = state.tratamiento,
+                onValueChange = { onEvent(PacienteFormUiEvent.TratamientoChanged(it)) },
                 label = { Text("Tratamiento Actual") },
                 modifier = Modifier.fillMaxWidth(),
                 readOnly = !isFormEditable,
@@ -290,8 +333,8 @@ fun PacienteEditScreen(
             )
 
             OutlinedTextField(
-                value = viewModel.alergias,
-                onValueChange = { viewModel.alergias = it },
+                value = state.alergias,
+                onValueChange = { onEvent(PacienteFormUiEvent.AlergiasChanged(it)) },
                 label = { Text("Alergias") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -304,8 +347,8 @@ fun PacienteEditScreen(
             SectionHeader("PRUEBAS DE LABORATORIO")
 
             OutlinedTextField(
-                value = viewModel.hb,
-                onValueChange = { viewModel.hb = it },
+                value = state.hb,
+                onValueChange = { onEvent(PacienteFormUiEvent.HbChanged(it)) },
                 label = { Text("Resultados de laboratorio") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 2,
@@ -318,8 +361,8 @@ fun PacienteEditScreen(
             SectionHeader("IMÁGENES")
 
             OutlinedTextField(
-                value = viewModel.fevi,
-                onValueChange = { viewModel.fevi = it },
+                value = state.fevi,
+                onValueChange = { onEvent(PacienteFormUiEvent.FeviChanged(it)) },
                 label = { Text("Estudios de imágenes") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 2,
@@ -332,8 +375,8 @@ fun PacienteEditScreen(
             SectionHeader("PLAN Y TRATAMIENTO RECOMENDADO")
 
             OutlinedTextField(
-                value = viewModel.plan,
-                onValueChange = { viewModel.plan = it },
+                value = state.plan,
+                onValueChange = { onEvent(PacienteFormUiEvent.PlanChanged(it)) },
                 label = { Text("Plan / Indicaciones") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3,
@@ -354,6 +397,8 @@ fun PacienteEditScreen(
                     value = dateString,
                     onValueChange = {},
                     label = { Text("Fecha de Cita *") },
+                    isError = state.fechaCitaError != null,
+                    supportingText = { state.fechaCitaError?.let { Text(it, color = Color.Red) } },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = false,
                     leadingIcon = {
@@ -368,32 +413,23 @@ fun PacienteEditScreen(
 
             if (isFormEditable) {
                 Button(
-                    onClick = {
-                        viewModel.savePaciente(
-                            onSuccess = {
-                                Toast.makeText(
-                                    context,
-                                    if (viewModel.isEditing) "Paciente actualizado" else "Paciente guardado",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                onNavigateBack()
-                            },
-                            onError = { errorMsg ->
-                                Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
-                            }
-                        )
-                    },
+                    onClick = { onEvent(PacienteFormUiEvent.Save) },
+                    enabled = !state.isSaving,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = tealColor),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text(
-                        text = if (viewModel.isEditing) "Actualizar Paciente" else "Guardar Paciente",
-                        color = Color.White,
-                        fontSize = 16.sp
-                    )
+                    if (state.isSaving) {
+                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    } else {
+                        Text(
+                            text = if (!state.isNew) "Actualizar Paciente" else "Guardar Paciente",
+                            color = Color.White,
+                            fontSize = 16.sp
+                        )
+                    }
                 }
             }
 
@@ -411,4 +447,22 @@ private fun SectionHeader(title: String) {
         color = Color(0xFF006D77),
         modifier = Modifier.padding(top = 10.dp, bottom = 2.dp)
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PacienteEditBodyPreview() {
+    MaterialTheme {
+        PacienteEditBody(
+            state = PacienteFormUiState(
+                nombre = "Juan Pérez",
+                edad = "45",
+                sexo = "Masculino",
+                motivoConsulta = "Evaluación cardiaca de rutina",
+                isNew = false
+            ),
+            onEvent = {},
+            onNavigateBack = {}
+        )
+    }
 }
