@@ -4,6 +4,9 @@ import kotlinx.serialization.Serializable
 
 sealed class Screen {
     @Serializable
+    data object Splash : Screen()
+
+    @Serializable
     data object Login : Screen()
 
     @Serializable
@@ -14,4 +17,10 @@ sealed class Screen {
 
     @Serializable
     data class PacienteEdit(val pacienteId: Int? = null) : Screen()
+
+    @Serializable
+    data object Patients : Screen()
+
+    @Serializable
+    data object Settings : Screen()
 }

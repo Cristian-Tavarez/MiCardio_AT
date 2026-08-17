@@ -22,7 +22,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.micardioat.domain.model.PacienteCardiologia
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -146,22 +145,13 @@ fun PacienteListScreen(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = if (isSearchActive && searchQuery.isNotBlank()) "Resultados de búsqueda" else "Mis Citas",
+                text = if (isSearchActive && searchQuery.isNotBlank()) "Resultados de búsqueda" else "Citas",
                 color = textPrimary,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = "+ Añadir",
-                color = accentTeal,
-                fontSize = 16.sp,
-                modifier = Modifier.clickable {
-                    onNavigateToDetail(null)
-                }
             )
         }
 
@@ -220,7 +210,7 @@ fun HorizontalCalendar(
     val days = remember {
         val calendar = Calendar.getInstance()
         val list = mutableListOf<Long>()
-        for (i in 0..30) {
+        repeat(31) {
             list.add(calendar.timeInMillis)
             calendar.add(Calendar.DAY_OF_YEAR, 1)
         }
