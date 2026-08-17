@@ -22,7 +22,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.micardioat.domain.model.PacienteCardiologia
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
