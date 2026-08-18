@@ -40,25 +40,63 @@ class PacienteAddViewModel @Inject constructor(
     fun onEvent(event: PacienteFormUiEvent) {
         when (event) {
             is PacienteFormUiEvent.Load -> loadPaciente(event.id)
-            is PacienteFormUiEvent.NombreChanged -> _state.update { it.copy(nombre = event.value, nombreError = null) }
-            is PacienteFormUiEvent.EdadChanged -> _state.update { it.copy(edad = event.value, edadError = null) }
-            is PacienteFormUiEvent.DiagnosticoChanged -> _state.update { it.copy(diagnostico = event.value) }
-            is PacienteFormUiEvent.PresionArterialChanged -> _state.update { it.copy(presionArterial = event.value) }
-            is PacienteFormUiEvent.SexoChanged -> _state.update { it.copy(sexo = event.value, sexoError = null) }
-            is PacienteFormUiEvent.MotivoConsultaChanged -> _state.update { it.copy(motivoConsulta = event.value, motivoConsultaError = null) }
-            is PacienteFormUiEvent.FcChanged -> _state.update { it.copy(fc = event.value) }
-            is PacienteFormUiEvent.FrChanged -> _state.update { it.copy(fr = event.value) }
-            is PacienteFormUiEvent.AntecedentesQuirurgicosChanged -> _state.update { it.copy(antecedentesQuirurgicos = event.value) }
-            is PacienteFormUiEvent.AntecedentesPatologicosChanged -> _state.update { it.copy(antecedentesPatologicos = event.value) }
-            is PacienteFormUiEvent.TratamientoChanged -> _state.update { it.copy(tratamiento = event.value) }
-            is PacienteFormUiEvent.AlergiasChanged -> _state.update { it.copy(alergias = event.value) }
-            is PacienteFormUiEvent.HbChanged -> _state.update { it.copy(hb = event.value) }
-            is PacienteFormUiEvent.HctChanged -> _state.update { it.copy(hct = event.value) }
-            is PacienteFormUiEvent.GlicemiaChanged -> _state.update { it.copy(glicemia = event.value) }
-            is PacienteFormUiEvent.ColTotalChanged -> _state.update { it.copy(colTotal = event.value) }
-            is PacienteFormUiEvent.FeviChanged -> _state.update { it.copy(fevi = event.value) }
-            is PacienteFormUiEvent.PlanChanged -> _state.update { it.copy(plan = event.value) }
-            is PacienteFormUiEvent.FechaCitaChanged -> _state.update { it.copy(fechaCita = event.value, fechaCitaError = null) }
+            is PacienteFormUiEvent.NombreChanged -> _state.update {
+                it.copy(nombre = event.value, nombreError = null)
+            }
+            is PacienteFormUiEvent.EdadChanged -> _state.update {
+                it.copy(edad = event.value, edadError = null)
+            }
+            is PacienteFormUiEvent.DiagnosticoChanged -> _state.update {
+                it.copy(diagnostico = event.value)
+            }
+            is PacienteFormUiEvent.PresionArterialChanged -> _state.update {
+                it.copy(presionArterial = event.value)
+            }
+            is PacienteFormUiEvent.SexoChanged -> _state.update {
+                it.copy(sexo = event.value, sexoError = null)
+            }
+            is PacienteFormUiEvent.MotivoConsultaChanged -> _state.update {
+                it.copy(motivoConsulta = event.value, motivoConsultaError = null)
+            }
+            is PacienteFormUiEvent.FcChanged -> _state.update {
+                it.copy(fc = event.value)
+            }
+            is PacienteFormUiEvent.FrChanged -> _state.update {
+                it.copy(fr = event.value)
+            }
+            is PacienteFormUiEvent.AntecedentesQuirurgicosChanged -> _state.update {
+                it.copy(antecedentesQuirurgicos = event.value)
+            }
+            is PacienteFormUiEvent.AntecedentesPatologicosChanged -> _state.update {
+                it.copy(antecedentesPatologicos = event.value)
+            }
+            is PacienteFormUiEvent.TratamientoChanged -> _state.update {
+                it.copy(tratamiento = event.value)
+            }
+            is PacienteFormUiEvent.AlergiasChanged -> _state.update {
+                it.copy(alergias = event.value)
+            }
+            is PacienteFormUiEvent.HbChanged -> _state.update {
+                it.copy(hb = event.value)
+            }
+            is PacienteFormUiEvent.HctChanged -> _state.update {
+                it.copy(hct = event.value)
+            }
+            is PacienteFormUiEvent.GlicemiaChanged -> _state.update {
+                it.copy(glicemia = event.value)
+            }
+            is PacienteFormUiEvent.ColTotalChanged -> _state.update {
+                it.copy(colTotal = event.value)
+            }
+            is PacienteFormUiEvent.FeviChanged -> _state.update {
+                it.copy(fevi = event.value)
+            }
+            is PacienteFormUiEvent.PlanChanged -> _state.update {
+                it.copy(plan = event.value)
+            }
+            is PacienteFormUiEvent.FechaCitaChanged -> _state.update {
+                it.copy(fechaCita = event.value, fechaCitaError = null)
+            }
 
             PacienteFormUiEvent.Save -> onSave()
             PacienteFormUiEvent.Delete -> onDelete()
