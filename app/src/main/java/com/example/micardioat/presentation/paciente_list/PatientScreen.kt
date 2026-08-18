@@ -26,7 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.micardioat.domain.model.PacienteCardiologia
+import com.example.micardioat.domain.model.PacienteDetalle
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -44,16 +44,21 @@ fun PatientsScreen(
     val filters = listOf("All Patients", "Recent", "High Risk", "Chronic")
 
     val filteredAndSortedPatients = allPatients
-        .filter { paciente ->
+        .filter { detalle ->
+            val paciente = detalle.paciente
+           
+            val ultimaVisita = detalle.visitas.maxByOrNull { it.fechaCita ?: 0L }
+
             val matchesSearch = paciente.nombre.contains(searchQuery, ignoreCase = true)
 
             val matchesFilter = when (selectedFilter) {
                 "High Risk" -> {
-                    val heartRate = paciente.fc.toIntOrNull() ?: 0
-                    heartRate > 100 || paciente.diagnostico.contains("Critical", ignoreCase = true)
+                    val heartRate = ultimaVisita?.fc?.toIntOrNull() ?: 0
+                    val diag = ultimaVisita?.diagnostico ?: ""
+                    heartRate > 100 || diag.contains("Critical", ignoreCase = true)
                 }
                 "Chronic" -> {
-                    val diag = paciente.diagnostico
+                    val diag = ultimaVisita?.diagnostico ?: ""
                     diag.contains("Chronic", ignoreCase = true) ||
                             diag.contains("Crónico", ignoreCase = true) ||
                             diag.contains("Crónica", ignoreCase = true)
@@ -66,10 +71,12 @@ fun PatientsScreen(
         .let { filteredList ->
             when (selectedFilter) {
                 "Recent" -> {
-                    filteredList.sortedByDescending { it.fechaCita ?: 0L }
+                    filteredList.sortedByDescending { detalle ->
+                        detalle.visitas.maxOfOrNull { it.fechaCita ?: 0L } ?: 0L
+                    }
                 }
                 else -> {
-                    filteredList.sortedBy { it.nombre.lowercase() }
+                    filteredList.sortedBy { it.paciente.nombre.lowercase() }
                 }
             }
         }
@@ -195,10 +202,10 @@ fun PatientsScreen(
                     contentPadding = PaddingValues(bottom = 80.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(filteredAndSortedPatients) { paciente ->
+                    items(filteredAndSortedPatients) { detalle ->
                         PatientDatabaseCard(
-                            paciente = paciente,
-                            onClick = { paciente.pacienteId?.let { onNavigateToDetail(it) } }
+                            detalle = detalle,
+                            onClick = { detalle.paciente.pacienteId?.let { onNavigateToDetail(it) } }
                         )
                     }
                 }
@@ -209,17 +216,22 @@ fun PatientsScreen(
 
 @Composable
 fun PatientDatabaseCard(
-    paciente: PacienteCardiologia,
+    detalle: PacienteDetalle,
     onClick: () -> Unit
 ) {
-    val heartRate = paciente.fc.toIntOrNull() ?: 0
-    val isCritical = heartRate > 100 || paciente.diagnostico.contains("Critical", ignoreCase = true)
+    val paciente = detalle.paciente
+    val ultimaVisita = detalle.visitas.maxByOrNull { it.fechaCita ?: 0L }
+
+    val heartRate = ultimaVisita?.fc?.toIntOrNull() ?: 0
+    val diagnostico = ultimaVisita?.diagnostico ?: ""
+    val isCritical = heartRate > 100 || diagnostico.contains("Critical", ignoreCase = true)
 
     val statusText = if (isCritical) "Critical" else "Stable"
     val statusColor = if (isCritical) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
     val statusBgColor = if (isCritical) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer
     val cardBorderColor = if (isCritical) MaterialTheme.colorScheme.error.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceVariant
-    val lastVisitDate = paciente.fechaCita?.let {
+
+    val lastVisitDate = ultimaVisita?.fechaCita?.let {
         SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(it))
     } ?: "N/A"
 
@@ -296,7 +308,7 @@ fun PatientDatabaseCard(
                         Text(text = "HR TREND", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = "${paciente.fc.ifEmpty { "--" }} BPM",
+                            text = "${ultimaVisita?.fc?.ifEmpty { "--" } ?: "--"} BPM",
                             color = statusColor,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
