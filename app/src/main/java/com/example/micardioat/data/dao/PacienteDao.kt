@@ -21,8 +21,6 @@ interface PacienteDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPaciente(paciente: PacienteEntity): Long
-
-    // NEW: Explicit update to prevent deleting history
     @Update
     suspend fun updatePaciente(paciente: PacienteEntity)
 
