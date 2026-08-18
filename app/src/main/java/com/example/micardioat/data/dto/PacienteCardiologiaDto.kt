@@ -1,6 +1,8 @@
 package com.example.micardioat.data.dto
 
-import com.example.micardioat.domain.model.PacienteCardiologia
+import com.example.micardioat.domain.model.Paciente
+import com.example.micardioat.domain.model.PacienteDetalle
+import com.example.micardioat.domain.model.Visita
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -13,24 +15,37 @@ data class PacienteCardiologiaDto(
     val fechaCita: Long? = null
 )
 
-fun PacienteCardiologiaDto.toDomain(): PacienteCardiologia {
-    return PacienteCardiologia(
-        pacienteId = pacienteId,
-        nombre = nombre,
-        edad = edad,
-        diagnostico = diagnostico,
-        presionArterial = presionArterial,
-        fechaCita = fechaCita
+fun PacienteCardiologiaDto.toDomain(): PacienteDetalle {
+    return PacienteDetalle(
+        paciente = Paciente(
+            pacienteId = pacienteId,
+            nombre = nombre,
+            edad = edad
+        ),
+        visitas = if (fechaCita != null || diagnostico.isNotBlank()) {
+            listOf(
+                Visita(
+                    pacienteId = pacienteId ?: 0,
+                    diagnostico = diagnostico,
+                    presionArterial = presionArterial,
+                    fechaCita = fechaCita
+                )
+            )
+        } else {
+            emptyList()
+        }
     )
 }
 
-fun PacienteCardiologia.toDto(): PacienteCardiologiaDto {
+fun PacienteDetalle.toDto(): PacienteCardiologiaDto {
+    val ultimaVisita = visitas.maxByOrNull { it.fechaCita ?: 0L }
+
     return PacienteCardiologiaDto(
-        pacienteId = pacienteId,
-        nombre = nombre,
-        edad = edad,
-        diagnostico = diagnostico,
-        presionArterial = presionArterial,
-        fechaCita = fechaCita
+        pacienteId = paciente.pacienteId,
+        nombre = paciente.nombre,
+        edad = paciente.edad,
+        diagnostico = ultimaVisita?.diagnostico ?: "",
+        presionArterial = ultimaVisita?.presionArterial ?: "",
+        fechaCita = ultimaVisita?.fechaCita
     )
 }

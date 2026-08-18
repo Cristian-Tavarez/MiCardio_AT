@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,12 +19,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.micardioat.domain.model.PacienteCardiologia
+import com.example.micardioat.domain.model.PacienteDetalle
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -37,14 +37,17 @@ fun PacienteListScreen(
 
     PacienteListBody(
         pacientes = pacientes,
-        onNavigateToDetail = onNavigateToDetail
+        onNavigateToDetail = onNavigateToDetail,
+        onQuickSchedule = viewModel::quickScheduleVisit
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PacienteListBody(
-    pacientes: List<PacienteCardiologia>,
-    onNavigateToDetail: (Int?) -> Unit
+    pacientes: List<PacienteDetalle>,
+    onNavigateToDetail: (Int?) -> Unit,
+    onQuickSchedule: (PacienteDetalle, Long) -> Unit
 ) {
     val currentLocale = LocalConfiguration.current.locales[0]
 
@@ -58,12 +61,15 @@ fun PacienteListBody(
     var selectedDateMillis by remember { mutableStateOf(System.currentTimeMillis()) }
     var isSearchActive by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
+    var showScheduleDialog by remember { mutableStateOf(false) }
 
-    val filteredPacientes = pacientes.filter { paciente ->
+    val filteredPacientes = pacientes.filter { detalle ->
         if (isSearchActive && searchQuery.isNotBlank()) {
-            paciente.nombre.contains(searchQuery, ignoreCase = true)
+            detalle.paciente.nombre.contains(searchQuery, ignoreCase = true)
         } else {
-            paciente.fechaCita != null && isSameDay(paciente.fechaCita, selectedDateMillis)
+            detalle.visitas.any { visita ->
+                visita.fechaCita != null && isSameDay(visita.fechaCita, selectedDateMillis)
+            }
         }
     }
 
@@ -73,141 +79,253 @@ fun PacienteListBody(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(lightBackground)
-            .padding(16.dp)
-    ) {
-        if (isSearchActive) {
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Buscar paciente por nombre...", color = textSecondary) },
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = accentTeal,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    focusedTextColor = textPrimary,
-                    unfocusedTextColor = textPrimary
-                ),
-                leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = "Buscar", tint = accentTeal)
-                },
-                trailingIcon = {
-                    IconButton(onClick = {
-                        if (searchQuery.isNotEmpty()) {
-                            searchQuery = ""
-                        } else {
-                            isSearchActive = false
+    if (showScheduleDialog) {
+        QuickScheduleDialog(
+            pacientes = pacientes,
+            selectedDateMillis = selectedDateMillis,
+            accentTeal = accentTeal,
+            onDismiss = { showScheduleDialog = false },
+            onConfirm = { detalle ->
+                onQuickSchedule(detalle, selectedDateMillis)
+                showScheduleDialog = false
+            }
+        )
+    }
+
+    Scaffold { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(lightBackground)
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+            if (isSearchActive) {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Buscar paciente por nombre...", color = textSecondary) },
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = accentTeal,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        focusedTextColor = textPrimary,
+                        unfocusedTextColor = textPrimary
+                    ),
+                    leadingIcon = {
+                        Icon(Icons.Default.Search, contentDescription = "Buscar", tint = accentTeal)
+                    },
+                    trailingIcon = {
+                        IconButton(onClick = {
+                            if (searchQuery.isNotEmpty()) {
+                                searchQuery = ""
+                            } else {
+                                isSearchActive = false
+                            }
+                        }) {
+                            Icon(Icons.Default.Close, contentDescription = "Cerrar búsqueda", tint = textSecondary)
                         }
-                    }) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar búsqueda", tint = textSecondary)
+                    }
+                )
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Inicio",
+                        color = textPrimary,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Row {
+                        IconButton(onClick = { isSearchActive = true }) {
+                            Icon(Icons.Default.Search, contentDescription = "Buscar", tint = textPrimary)
+                        }
+                        IconButton(onClick = { showScheduleDialog = true }) {
+                            Icon(Icons.Default.DateRange, contentDescription = "Programar", tint = accentTeal)
+                        }
                     }
                 }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = SimpleDateFormat("MMMM yyyy", currentLocale).format(Date(selectedDateMillis)).uppercase(),
+                color = accentTeal,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 12.dp)
             )
-        } else {
+
+            HorizontalCalendar(
+                selectedDateMillis = selectedDateMillis,
+                onDateSelected = { newDate ->
+                    selectedDateMillis = newDate
+                    isSearchActive = false
+                    searchQuery = ""
+                },
+                accentColor = accentTeal,
+                onAccentTextColor = onAccentText,
+                unselectedBgColor = cardBackground,
+                primaryTextColor = textPrimary,
+                secondaryTextColor = textSecondary
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Inicio",
+                    text = if (isSearchActive && searchQuery.isNotBlank()) "Resultados de búsqueda" else "Citas para este día",
                     color = textPrimary,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
-                IconButton(onClick = { isSearchActive = true }) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Buscar",
-                        tint = textPrimary
-                    )
-                }
             }
-        }
 
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = SimpleDateFormat("MMMM yyyy", currentLocale).format(Date(selectedDateMillis)).uppercase(),
-            color = accentTeal,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
+            Spacer(modifier = Modifier.height(16.dp))
 
-        HorizontalCalendar(
-            selectedDateMillis = selectedDateMillis,
-            onDateSelected = { newDate ->
-                selectedDateMillis = newDate
-                isSearchActive = false
-                searchQuery = ""
-            },
-            accentColor = accentTeal,
-            onAccentTextColor = onAccentText,
-            unselectedBgColor = cardBackground,
-            primaryTextColor = textPrimary,
-            secondaryTextColor = textSecondary
-        )
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(bottom = 16.dp)
+            ) {
+                if (filteredPacientes.isEmpty()) {
+                    item {
+                        Text(
+                            text = if (isSearchActive && searchQuery.isNotBlank())
+                                "No se encontraron pacientes."
+                            else
+                                "No hay citas programadas para este día.",
+                            color = textSecondary,
+                            modifier = Modifier.padding(top = 16.dp)
+                        )
+                    }
+                } else {
+                    items(filteredPacientes) { detalle ->
+                        val paciente = detalle.paciente
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = if (isSearchActive && searchQuery.isNotBlank()) "Resultados de búsqueda" else "Citas",
-                color = textPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            if (filteredPacientes.isEmpty()) {
-                item {
-                    Text(
-                        text = if (isSearchActive && searchQuery.isNotBlank())
-                            "No se encontraron pacientes."
-                        else
-                            "No hay citas programadas para este día.",
-                        color = textSecondary,
-                        modifier = Modifier.padding(top = 16.dp)
-                    )
-                }
-            } else {
-                items(filteredPacientes) { paciente ->
-                    val displayDate = paciente.fechaCita?.let {
-                        cardDateFormatter.format(Date(it)).uppercase()
-                    } ?: "SIN\nFECHA"
-
-                    AppointmentCard(
-                        date = displayDate,
-                        accentColor = accentTeal,
-                        onAccentTextColor = onAccentText,
-                        cardBgColor = cardBackground,
-                        textColor = textPrimary,
-                        subTextColor = textSecondary,
-                        name = paciente.nombre,
-                        details = "Diagnóstico: ${if (paciente.diagnostico.isNotBlank()) paciente.diagnostico else paciente.motivoConsulta}",
-                        modifier = Modifier.clickable {
-                            onNavigateToDetail(paciente.pacienteId)
+                        val relevantVisit = if (isSearchActive && searchQuery.isNotBlank()) {
+                            detalle.visitas.maxByOrNull { it.fechaCita ?: 0L }
+                        } else {
+                            detalle.visitas.find { it.fechaCita != null && isSameDay(it.fechaCita, selectedDateMillis) }
                         }
-                    )
+
+                        val displayDate = relevantVisit?.fechaCita?.let {
+                            cardDateFormatter.format(Date(it)).uppercase()
+                        } ?: "SIN\nFECHA"
+
+                        val diagnosticoStr = relevantVisit?.diagnostico ?: ""
+                        val motivoStr = relevantVisit?.motivoConsulta ?: ""
+                        val detailsText = diagnosticoStr.ifBlank { motivoStr }
+
+                        AppointmentCard(
+                            date = displayDate,
+                            accentColor = accentTeal,
+                            onAccentTextColor = onAccentText,
+                            cardBgColor = cardBackground,
+                            textColor = textPrimary,
+                            subTextColor = textSecondary,
+                            name = paciente.nombre,
+                            details = detailsText.ifBlank { "Sin especificar" },
+                            modifier = Modifier.clickable {
+                                onNavigateToDetail(paciente.pacienteId)
+                            }
+                        )
+                    }
                 }
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun QuickScheduleDialog(
+    pacientes: List<PacienteDetalle>,
+    selectedDateMillis: Long,
+    accentTeal: Color,
+    onDismiss: () -> Unit,
+    onConfirm: (PacienteDetalle) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var selectedDetalle by remember { mutableStateOf<PacienteDetalle?>(null) }
+    val displayDate = SimpleDateFormat("dd/MM/yyyy", LocalConfiguration.current.locales[0]).format(Date(selectedDateMillis))
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Programar Cita Existente", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text("Fecha seleccionada: $displayDate")
+
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded }
+                ) {
+                    OutlinedTextField(
+                        value = selectedDetalle?.paciente?.nombre ?: "",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Seleccionar Paciente") },
+                        placeholder = { Text("Toca para elegir...") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = accentTeal,
+                            focusedLabelColor = accentTeal
+                        ),
+                        modifier = Modifier
+                            .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
+                            .fillMaxWidth()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        if (pacientes.isEmpty()) {
+                            DropdownMenuItem(
+                                text = { Text("No hay pacientes registrados") },
+                                onClick = { expanded = false }
+                            )
+                        } else {
+                            pacientes.sortedBy { it.paciente.nombre }.forEach { detalle ->
+                                DropdownMenuItem(
+                                    text = { Text(detalle.paciente.nombre) },
+                                    onClick = {
+                                        selectedDetalle = detalle
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { selectedDetalle?.let { onConfirm(it) } },
+                enabled = selectedDetalle != null,
+                colors = ButtonDefaults.buttonColors(containerColor = accentTeal)
+            ) {
+                Text("Confirmar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    )
 }
 
 @Composable
@@ -336,34 +454,4 @@ fun isSameDay(utcMillis: Long, localMillis: Long): Boolean {
     val dateFromCalendar = localFormatter.format(Date(localMillis))
 
     return dateFromDb == dateFromCalendar
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun PacienteListBodyPreview() {
-    MaterialTheme {
-        PacienteListBody(
-            pacientes = listOf(
-                PacienteCardiologia(
-                    pacienteId = 1,
-                    nombre = "Juan Pérez",
-                    edad = 45,
-                    diagnostico = "Hipertensión Arterial",
-                    presionArterial = "120/80",
-                    motivoConsulta = "Evaluación cardiaca",
-                    fechaCita = System.currentTimeMillis()
-                ),
-                PacienteCardiologia(
-                    pacienteId = 2,
-                    nombre = "María Gómez",
-                    edad = 30,
-                    diagnostico = "Sin diagnóstico",
-                    presionArterial = "110/70",
-                    motivoConsulta = "Chequeo de rutina",
-                    fechaCita = System.currentTimeMillis()
-                )
-            ),
-            onNavigateToDetail = {}
-        )
-    }
 }

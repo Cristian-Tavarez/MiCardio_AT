@@ -1,26 +1,33 @@
 package com.example.micardioat.presentation.paciente_list
 
+import com.example.micardioat.domain.model.Visita
+
 data class PacienteFormUiState(
-    val pacienteId: Int? = null,
-    val isNew: Boolean = true,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
-    val saved: Boolean = false,
     val isDeleting: Boolean = false,
+    val saved: Boolean = false,
     val deleted: Boolean = false,
+    val isNew: Boolean = true,
+    val errorMessage: String? = null,
 
+    val pacienteId: Int? = null,
     val nombre: String = "",
     val edad: String = "",
+    val sexo: String = "",
+    val antecedentesQuirurgicos: String = "",
+    val antecedentesPatologicos: String = "",
+    val alergias: String = "",
+
+    val visitaId: Int? = null,
+    val originalFechaCita: Long? = null,
+
     val diagnostico: String = "",
     val presionArterial: String = "",
-    val sexo: String = "",
     val motivoConsulta: String = "",
     val fc: String = "",
     val fr: String = "",
-    val antecedentesQuirurgicos: String = "",
-    val antecedentesPatologicos: String = "",
     val tratamiento: String = "",
-    val alergias: String = "",
     val hb: String = "",
     val hct: String = "",
     val glicemia: String = "",
@@ -34,5 +41,6 @@ data class PacienteFormUiState(
     val sexoError: String? = null,
     val motivoConsultaError: String? = null,
     val fechaCitaError: String? = null,
-    val errorMessage: String? = null
+
+    val historialVisitas: List<Visita> = emptyList()
 )
