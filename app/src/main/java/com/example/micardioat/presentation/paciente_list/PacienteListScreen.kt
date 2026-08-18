@@ -278,12 +278,15 @@ fun QuickScheduleDialog(
                         label = { Text("Seleccionar Paciente") },
                         placeholder = { Text("Toca para elegir...") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
+                        colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = accentTeal,
                             focusedLabelColor = accentTeal
                         ),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
+                            .fillMaxWidth()
                     )
+
                     ExposedDropdownMenu(
                         expanded = expanded,
                         onDismissRequest = { expanded = false }
