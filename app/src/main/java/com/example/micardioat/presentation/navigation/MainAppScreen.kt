@@ -8,7 +8,6 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -18,15 +17,18 @@ fun MainAppScreen(
     navController: NavController,
     content: @Composable (Modifier) -> Unit
 ) {
-    var selectedItem by remember { mutableStateOf(0) }
     val items = listOf("Inicio", "Pacientes", "Ajustes")
     val icons = listOf(Icons.Default.DateRange, Icons.Default.People, Icons.Default.Settings)
 
-    val accentTeal = Color(0xFF006D77)
-    val indicatorColor = Color(0xFFB2EBF2)
-
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination?.route
+
+    val selectedItem = when {
+        currentDestination?.contains("PacienteList") == true -> 0
+        currentDestination?.contains("Patients") == true -> 1
+        currentDestination?.contains("Settings") == true -> 2
+        else -> 0
+    }
 
     val showBottomBar = currentDestination?.contains("PacienteList") == true ||
             currentDestination?.contains("Patients") == true ||
@@ -36,8 +38,8 @@ fun MainAppScreen(
         bottomBar = {
             if (showBottomBar) {
                 NavigationBar(
-                    containerColor = Color.White,
-                    contentColor = Color.Gray
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                 ) {
                     items.forEachIndexed { index, item ->
                         NavigationBarItem(
@@ -45,7 +47,6 @@ fun MainAppScreen(
                             label = { Text(item) },
                             selected = selectedItem == index,
                             onClick = {
-                                selectedItem = index
                                 val route = when(index) {
                                     0 -> Screen.PacienteList
                                     1 -> Screen.Patients
@@ -60,11 +61,11 @@ fun MainAppScreen(
                                 }
                             },
                             colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = accentTeal,
-                                selectedTextColor = accentTeal,
-                                indicatorColor = indicatorColor,
-                                unselectedIconColor = Color.Gray,
-                                unselectedTextColor = Color.Gray
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         )
                     }
