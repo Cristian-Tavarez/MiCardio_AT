@@ -46,7 +46,7 @@ fun PatientsScreen(
     val filteredAndSortedPatients = allPatients
         .filter { detalle ->
             val paciente = detalle.paciente
-           
+
             val ultimaVisita = detalle.visitas.maxByOrNull { it.fechaCita ?: 0L }
 
             val matchesSearch = paciente.nombre.contains(searchQuery, ignoreCase = true)
