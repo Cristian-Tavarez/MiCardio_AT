@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -32,31 +31,29 @@ import java.util.Date
 @Composable
 fun PacienteListScreen(
     viewModel: PacienteListViewModel = hiltViewModel(),
-    onNavigateToDetail: (Int?) -> Unit = {},
-    onLogout: () -> Unit = {}
+    onNavigateToDetail: (Int?) -> Unit = {}
 ) {
     val pacientes by viewModel.pacientes.collectAsStateWithLifecycle()
 
     PacienteListBody(
         pacientes = pacientes,
-        onNavigateToDetail = onNavigateToDetail,
-        onLogout = onLogout
+        onNavigateToDetail = onNavigateToDetail
     )
 }
 
 @Composable
 fun PacienteListBody(
     pacientes: List<PacienteCardiologia>,
-    onNavigateToDetail: (Int?) -> Unit,
-    onLogout: () -> Unit
+    onNavigateToDetail: (Int?) -> Unit
 ) {
     val currentLocale = LocalConfiguration.current.locales[0]
 
-    val lightBackground = Color.White
-    val accentTeal = Color(0xFF006D77)
-    val cardBackground = Color(0xFFF5F5F5)
-    val textPrimary = Color.Black
-    val textSecondary = Color.DarkGray
+    val lightBackground = MaterialTheme.colorScheme.background
+    val accentTeal = MaterialTheme.colorScheme.primary
+    val cardBackground = MaterialTheme.colorScheme.surfaceVariant
+    val textPrimary = MaterialTheme.colorScheme.onBackground
+    val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
+    val onAccentText = MaterialTheme.colorScheme.onPrimary
 
     var selectedDateMillis by remember { mutableStateOf(System.currentTimeMillis()) }
     var isSearchActive by remember { mutableStateOf(false) }
@@ -87,13 +84,15 @@ fun PacienteListBody(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Buscar paciente por nombre...") },
+                placeholder = { Text("Buscar paciente por nombre...", color = textSecondary) },
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = accentTeal,
-                    unfocusedBorderColor = Color.LightGray,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedTextColor = textPrimary,
+                    unfocusedTextColor = textPrimary
                 ),
                 leadingIcon = {
                     Icon(Icons.Default.Search, contentDescription = "Buscar", tint = accentTeal)
@@ -117,33 +116,29 @@ fun PacienteListBody(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = SimpleDateFormat("MMMM yyyy", currentLocale).format(Date()).uppercase(),
-                    color = accentTeal,
-                    fontSize = 18.sp,
+                    text = "Inicio",
+                    color = textPrimary,
+                    fontSize = 28.sp,
                     fontWeight = FontWeight.Bold
                 )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = { isSearchActive = true }) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Buscar",
-                            tint = textPrimary
-                        )
-                    }
-                    IconButton(onClick = onLogout) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                            contentDescription = "Cerrar Sesión",
-                            tint = Color(0xFFFF5252)
-                        )
-                    }
+                IconButton(onClick = { isSearchActive = true }) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Buscar",
+                        tint = textPrimary
+                    )
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = SimpleDateFormat("MMMM yyyy", currentLocale).format(Date(selectedDateMillis)).uppercase(),
+            color = accentTeal,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
 
         HorizontalCalendar(
             selectedDateMillis = selectedDateMillis,
@@ -153,6 +148,7 @@ fun PacienteListBody(
                 searchQuery = ""
             },
             accentColor = accentTeal,
+            onAccentTextColor = onAccentText,
             unselectedBgColor = cardBackground,
             primaryTextColor = textPrimary,
             secondaryTextColor = textSecondary
@@ -185,7 +181,7 @@ fun PacienteListBody(
                             "No se encontraron pacientes."
                         else
                             "No hay citas programadas para este día.",
-                        color = Color.Gray,
+                        color = textSecondary,
                         modifier = Modifier.padding(top = 16.dp)
                     )
                 }
@@ -198,6 +194,7 @@ fun PacienteListBody(
                     AppointmentCard(
                         date = displayDate,
                         accentColor = accentTeal,
+                        onAccentTextColor = onAccentText,
                         cardBgColor = cardBackground,
                         textColor = textPrimary,
                         subTextColor = textSecondary,
@@ -218,6 +215,7 @@ fun HorizontalCalendar(
     selectedDateMillis: Long,
     onDateSelected: (Long) -> Unit,
     accentColor: Color,
+    onAccentTextColor: Color,
     unselectedBgColor: Color,
     primaryTextColor: Color,
     secondaryTextColor: Color
@@ -236,16 +234,19 @@ fun HorizontalCalendar(
 
     val dayNameFormatter = remember(currentLocale) { SimpleDateFormat("EEE", currentLocale) }
     val dayNumberFormatter = remember(currentLocale) { SimpleDateFormat("dd", currentLocale) }
+    val exactDateFormatter = remember(currentLocale) { SimpleDateFormat("yyyy-MM-dd", currentLocale) }
 
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         items(days) { dayMillis ->
-            val isSelected = isSameDay(dayMillis, selectedDateMillis)
+
+            val isSelected = exactDateFormatter.format(Date(dayMillis)) == exactDateFormatter.format(Date(selectedDateMillis))
+
             val backgroundColor = if (isSelected) accentColor else unselectedBgColor
-            val topTextColor = if (isSelected) Color.White else secondaryTextColor
-            val bottomTextColor = if (isSelected) Color.White else primaryTextColor
+            val topTextColor = if (isSelected) onAccentTextColor else secondaryTextColor
+            val bottomTextColor = if (isSelected) onAccentTextColor else primaryTextColor
 
             Column(
                 modifier = Modifier
@@ -277,6 +278,7 @@ fun HorizontalCalendar(
 fun AppointmentCard(
     date: String,
     accentColor: Color,
+    onAccentTextColor: Color,
     cardBgColor: Color,
     textColor: Color,
     subTextColor: Color,
@@ -299,7 +301,7 @@ fun AppointmentCard(
         ) {
             Text(
                 text = date,
-                color = Color.White,
+                color = onAccentTextColor,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp
             )
@@ -361,8 +363,7 @@ private fun PacienteListBodyPreview() {
                     fechaCita = System.currentTimeMillis()
                 )
             ),
-            onNavigateToDetail = {},
-            onLogout = {}
+            onNavigateToDetail = {}
         )
     }
 }

@@ -52,7 +52,16 @@ fun PacienteEditBody(
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val tealColor = Color(0xFF006D77)
+
+    // Connected to your dynamic theme colors
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
+    val backgroundColor = MaterialTheme.colorScheme.background
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val onSurfaceVariantColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val outlineColor = MaterialTheme.colorScheme.outlineVariant
+    val errorColor = MaterialTheme.colorScheme.error
 
     var isFormEditable by remember(state.isNew) { mutableStateOf(state.isNew) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -79,17 +88,17 @@ fun PacienteEditBody(
     }
 
     val inputColors = OutlinedTextFieldDefaults.colors(
-        focusedTextColor = Color.Black,
-        unfocusedTextColor = Color.Black,
-        focusedLabelColor = tealColor,
-        unfocusedLabelColor = Color.DarkGray,
-        focusedBorderColor = tealColor,
-        unfocusedBorderColor = Color.Gray,
-        cursorColor = tealColor,
-        disabledTextColor = Color.Black,
-        disabledBorderColor = Color.Gray,
-        disabledLabelColor = Color.DarkGray,
-        disabledLeadingIconColor = Color.Black
+        focusedTextColor = onSurfaceColor,
+        unfocusedTextColor = onSurfaceColor,
+        focusedLabelColor = primaryColor,
+        unfocusedLabelColor = onSurfaceVariantColor,
+        focusedBorderColor = primaryColor,
+        unfocusedBorderColor = outlineColor,
+        cursorColor = primaryColor,
+        disabledTextColor = onSurfaceColor.copy(alpha = 0.6f),
+        disabledBorderColor = outlineColor.copy(alpha = 0.5f),
+        disabledLabelColor = onSurfaceVariantColor.copy(alpha = 0.6f),
+        disabledLeadingIconColor = onSurfaceVariantColor.copy(alpha = 0.6f)
     )
 
     var showDatePicker by remember { mutableStateOf(false) }
@@ -126,7 +135,7 @@ fun PacienteEditBody(
                 ) {
                     Text(
                         text = "Sí",
-                        color = Color.Red,
+                        color = errorColor,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
@@ -136,15 +145,15 @@ fun PacienteEditBody(
                 TextButton(onClick = { showDeleteDialog = false }) {
                     Text(
                         text = "No",
-                        color = Color.DarkGray,
+                        color = onSurfaceVariantColor,
                         fontWeight = FontWeight.Medium,
                         fontSize = 16.sp
                     )
                 }
             },
-            containerColor = Color.White,
-            titleContentColor = Color.Black,
-            textContentColor = Color(0xFF333333)
+            containerColor = surfaceColor,
+            titleContentColor = onSurfaceColor,
+            textContentColor = onSurfaceVariantColor
         )
     }
 
@@ -160,14 +169,15 @@ fun PacienteEditBody(
                     onEvent(PacienteFormUiEvent.FechaCitaChanged(datePickerState.selectedDateMillis))
                     showDatePicker = false
                 }) {
-                    Text("Aceptar", color = tealColor)
+                    Text("Aceptar", color = primaryColor)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancelar", color = Color.Gray)
+                    Text("Cancelar", color = onSurfaceVariantColor)
                 }
-            }
+            },
+            colors = DatePickerDefaults.colors(containerColor = surfaceColor)
         ) {
             DatePicker(state = datePickerState)
         }
@@ -179,7 +189,7 @@ fun PacienteEditBody(
                 title = {
                     Text(
                         text = if (!state.isNew) "Ficha Médica del Paciente" else "Registrar Paciente",
-                        color = Color.Black,
+                        color = onSurfaceColor,
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -188,7 +198,7 @@ fun PacienteEditBody(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
-                            tint = Color.Black
+                            tint = onSurfaceColor
                         )
                     }
                 },
@@ -198,18 +208,18 @@ fun PacienteEditBody(
                             Icon(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = "Editar",
-                                tint = Color(0xFF5D9CFF)
+                                tint = primaryColor
                             )
                         }
                     }
 
                     if (!state.isNew) {
                         IconButton(onClick = { showDeleteDialog = true }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color.Red)
+                            Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = errorColor)
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = surfaceColor)
             )
         }
     ) { paddingValues ->
@@ -217,25 +227,25 @@ fun PacienteEditBody(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color.White)
+                .background(backgroundColor)
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            SectionHeader("DATOS GENERALES")
+            SectionHeader("DATOS GENERALES", primaryColor)
 
             OutlinedTextField(
                 value = state.nombre,
                 onValueChange = { onEvent(PacienteFormUiEvent.NombreChanged(it)) },
                 label = { Text("Nombre Completo *") },
                 isError = state.nombreError != null,
-                supportingText = { state.nombreError?.let { Text(it, color = Color.Red) } },
+                supportingText = { state.nombreError?.let { Text(it, color = errorColor) } },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 readOnly = !isFormEditable,
                 enabled = isFormEditable,
                 colors = inputColors,
-                textStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
+                textStyle = TextStyle(color = onSurfaceColor, fontSize = 16.sp)
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -244,27 +254,27 @@ fun PacienteEditBody(
                     onValueChange = { onEvent(PacienteFormUiEvent.EdadChanged(it)) },
                     label = { Text("Edad *") },
                     isError = state.edadError != null,
-                    supportingText = { state.edadError?.let { Text(it, color = Color.Red) } },
+                    supportingText = { state.edadError?.let { Text(it, color = errorColor) } },
                     modifier = Modifier.weight(1f),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     readOnly = !isFormEditable,
                     enabled = isFormEditable,
                     colors = inputColors,
-                    textStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
+                    textStyle = TextStyle(color = onSurfaceColor, fontSize = 16.sp)
                 )
                 OutlinedTextField(
                     value = state.sexo,
                     onValueChange = { onEvent(PacienteFormUiEvent.SexoChanged(it)) },
                     label = { Text("Sexo *") },
                     isError = state.sexoError != null,
-                    supportingText = { state.sexoError?.let { Text(it, color = Color.Red) } },
+                    supportingText = { state.sexoError?.let { Text(it, color = errorColor) } },
                     modifier = Modifier.weight(1f),
                     singleLine = true,
                     readOnly = !isFormEditable,
                     enabled = isFormEditable,
                     colors = inputColors,
-                    textStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
+                    textStyle = TextStyle(color = onSurfaceColor, fontSize = 16.sp)
                 )
             }
 
@@ -273,15 +283,15 @@ fun PacienteEditBody(
                 onValueChange = { onEvent(PacienteFormUiEvent.MotivoConsultaChanged(it)) },
                 label = { Text("Motivo de Consulta / Diagnóstico *") },
                 isError = state.motivoConsultaError != null,
-                supportingText = { state.motivoConsultaError?.let { Text(it, color = Color.Red) } },
+                supportingText = { state.motivoConsultaError?.let { Text(it, color = errorColor) } },
                 modifier = Modifier.fillMaxWidth(),
                 readOnly = !isFormEditable,
                 enabled = isFormEditable,
                 colors = inputColors,
-                textStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
+                textStyle = TextStyle(color = onSurfaceColor, fontSize = 16.sp)
             )
 
-            SectionHeader("SIGNOS VITALES")
+            SectionHeader("SIGNOS VITALES", primaryColor)
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
@@ -293,7 +303,7 @@ fun PacienteEditBody(
                     readOnly = !isFormEditable,
                     enabled = isFormEditable,
                     colors = inputColors,
-                    textStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
+                    textStyle = TextStyle(color = onSurfaceColor, fontSize = 16.sp)
                 )
                 OutlinedTextField(
                     value = state.fc,
@@ -304,11 +314,11 @@ fun PacienteEditBody(
                     readOnly = !isFormEditable,
                     enabled = isFormEditable,
                     colors = inputColors,
-                    textStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
+                    textStyle = TextStyle(color = onSurfaceColor, fontSize = 16.sp)
                 )
             }
 
-            SectionHeader("ANTECEDENTES Y TRATAMIENTO")
+            SectionHeader("ANTECEDENTES Y TRATAMIENTO", primaryColor)
 
             OutlinedTextField(
                 value = state.antecedentesPatologicos,
@@ -318,7 +328,7 @@ fun PacienteEditBody(
                 readOnly = !isFormEditable,
                 enabled = isFormEditable,
                 colors = inputColors,
-                textStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
+                textStyle = TextStyle(color = onSurfaceColor, fontSize = 16.sp)
             )
 
             OutlinedTextField(
@@ -329,7 +339,7 @@ fun PacienteEditBody(
                 readOnly = !isFormEditable,
                 enabled = isFormEditable,
                 colors = inputColors,
-                textStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
+                textStyle = TextStyle(color = onSurfaceColor, fontSize = 16.sp)
             )
 
             OutlinedTextField(
@@ -341,10 +351,10 @@ fun PacienteEditBody(
                 readOnly = !isFormEditable,
                 enabled = isFormEditable,
                 colors = inputColors,
-                textStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
+                textStyle = TextStyle(color = onSurfaceColor, fontSize = 16.sp)
             )
 
-            SectionHeader("PRUEBAS DE LABORATORIO")
+            SectionHeader("PRUEBAS DE LABORATORIO", primaryColor)
 
             OutlinedTextField(
                 value = state.hb,
@@ -355,10 +365,10 @@ fun PacienteEditBody(
                 readOnly = !isFormEditable,
                 enabled = isFormEditable,
                 colors = inputColors,
-                textStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
+                textStyle = TextStyle(color = onSurfaceColor, fontSize = 16.sp)
             )
 
-            SectionHeader("IMÁGENES")
+            SectionHeader("IMÁGENES", primaryColor)
 
             OutlinedTextField(
                 value = state.fevi,
@@ -369,10 +379,10 @@ fun PacienteEditBody(
                 readOnly = !isFormEditable,
                 enabled = isFormEditable,
                 colors = inputColors,
-                textStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
+                textStyle = TextStyle(color = onSurfaceColor, fontSize = 16.sp)
             )
 
-            SectionHeader("PLAN Y TRATAMIENTO RECOMENDADO")
+            SectionHeader("PLAN Y TRATAMIENTO RECOMENDADO", primaryColor)
 
             OutlinedTextField(
                 value = state.plan,
@@ -383,10 +393,10 @@ fun PacienteEditBody(
                 readOnly = !isFormEditable,
                 enabled = isFormEditable,
                 colors = inputColors,
-                textStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
+                textStyle = TextStyle(color = onSurfaceColor, fontSize = 16.sp)
             )
 
-            SectionHeader("PROGRAMACIÓN DE CITA")
+            SectionHeader("PROGRAMACIÓN DE CITA", primaryColor)
 
             Box(
                 modifier = Modifier
@@ -398,14 +408,14 @@ fun PacienteEditBody(
                     onValueChange = {},
                     label = { Text("Fecha de Cita *") },
                     isError = state.fechaCitaError != null,
-                    supportingText = { state.fechaCitaError?.let { Text(it, color = Color.Red) } },
+                    supportingText = { state.fechaCitaError?.let { Text(it, color = errorColor) } },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = false,
                     leadingIcon = {
-                        Icon(Icons.Default.DateRange, contentDescription = "Icono de calendario")
+                        Icon(Icons.Default.DateRange, contentDescription = "Icono de calendario", tint = onSurfaceVariantColor)
                     },
                     colors = inputColors,
-                    textStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
+                    textStyle = TextStyle(color = onSurfaceColor, fontSize = 16.sp)
                 )
             }
 
@@ -418,15 +428,15 @@ fun PacienteEditBody(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = tealColor),
+                    colors = ButtonDefaults.buttonColors(containerColor = primaryColor),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     if (state.isSaving) {
-                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                        CircularProgressIndicator(color = onPrimaryColor, modifier = Modifier.size(24.dp))
                     } else {
                         Text(
                             text = if (!state.isNew) "Actualizar Paciente" else "Guardar Paciente",
-                            color = Color.White,
+                            color = onPrimaryColor,
                             fontSize = 16.sp
                         )
                     }
@@ -439,12 +449,12 @@ fun PacienteEditBody(
 }
 
 @Composable
-private fun SectionHeader(title: String) {
+private fun SectionHeader(title: String, color: Color) {
     Text(
         text = title,
         fontSize = 13.sp,
         fontWeight = FontWeight.Bold,
-        color = Color(0xFF006D77),
+        color = color,
         modifier = Modifier.padding(top = 10.dp, bottom = 2.dp)
     )
 }

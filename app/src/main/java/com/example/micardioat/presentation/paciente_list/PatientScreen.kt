@@ -38,20 +38,21 @@ fun PatientsScreen(
     viewModel: PacienteListViewModel = hiltViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    var selectedFilter by remember { mutableStateOf("Pacientes") }
+    var selectedFilter by remember { mutableStateOf("All Patients") }
 
     val allPatients by viewModel.pacientes.collectAsState()
-    val filters = listOf("Pacientes", "Recientes", "Riesgo Alto", "Chronico")
+    val filters = listOf("All Patients", "Recent", "High Risk", "Chronic")
+
     val filteredAndSortedPatients = allPatients
         .filter { paciente ->
             val matchesSearch = paciente.nombre.contains(searchQuery, ignoreCase = true)
 
             val matchesFilter = when (selectedFilter) {
-                "Riesgo Alto" -> {
+                "High Risk" -> {
                     val heartRate = paciente.fc.toIntOrNull() ?: 0
                     heartRate > 100 || paciente.diagnostico.contains("Critical", ignoreCase = true)
                 }
-                "Chronico" -> {
+                "Chronic" -> {
                     val diag = paciente.diagnostico
                     diag.contains("Chronic", ignoreCase = true) ||
                             diag.contains("Crónico", ignoreCase = true) ||
@@ -64,7 +65,7 @@ fun PatientsScreen(
         }
         .let { filteredList ->
             when (selectedFilter) {
-                "Recientes" -> {
+                "Recent" -> {
                     filteredList.sortedByDescending { it.fechaCita ?: 0L }
                 }
                 else -> {
@@ -77,14 +78,14 @@ fun PatientsScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddPatient,
-                containerColor = Color(0xFF006D77),
-                contentColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Patient")
             }
         },
-        containerColor = Color(0xFFF8F9FA)
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -103,7 +104,7 @@ fun PatientsScreen(
                         modifier = Modifier
                             .size(32.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFB2EBF2)),
+                            .background(MaterialTheme.colorScheme.primaryContainer),
                         contentAlignment = Alignment.Center
                     ) {
                         Text("", fontSize = 16.sp)
@@ -111,7 +112,7 @@ fun PatientsScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "CardioCare",
-                        color = Color(0xFF006D77),
+                        color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
                     )
@@ -119,16 +120,16 @@ fun PatientsScreen(
                 Icon(
                     imageVector = Icons.Default.Notifications,
                     contentDescription = "Notifications",
-                    tint = Color(0xFF006D77)
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "Base de Datos de Pacientes",
+                text = "Patient Database",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF004D40)
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -137,20 +138,21 @@ fun PatientsScreen(
                 onValueChange = { searchQuery = it },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = {
-                    Text("Buscar por nombre, ID o condición...", color = Color.Gray, fontSize = 14.sp)
+                    Text("Search patients by name, ID, or conditi...", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                 },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.Gray) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF006D77),
-                    unfocusedBorderColor = Color(0xFFE0E0E0),
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
                 ),
                 shape = RoundedCornerShape(8.dp),
                 singleLine = true
             )
 
             Spacer(modifier = Modifier.height(16.dp))
+
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -163,19 +165,19 @@ fun PatientsScreen(
                         label = {
                             Text(
                                 text = filter,
-                                color = if (isSelected) Color(0xFF006D77) else Color.Gray,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                 fontSize = 12.sp
                             )
                         },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Color(0xFFB2EBF2),
-                            containerColor = Color.White
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            containerColor = MaterialTheme.colorScheme.surface
                         ),
                         border = FilterChipDefaults.filterChipBorder(
                             enabled = true,
                             selected = isSelected,
-                            borderColor = if (isSelected) Color(0xFF006D77) else Color(0xFFE0E0E0)
+                            borderColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
                         ),
                         shape = RoundedCornerShape(16.dp)
                     )
@@ -185,7 +187,7 @@ fun PatientsScreen(
             Spacer(modifier = Modifier.height(16.dp))
             if (filteredAndSortedPatients.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No se encontraron pacientes.", color = Color.Gray)
+                    Text("No patients found.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             } else {
                 LazyColumn(
@@ -214,9 +216,9 @@ fun PatientDatabaseCard(
     val isCritical = heartRate > 100 || paciente.diagnostico.contains("Critical", ignoreCase = true)
 
     val statusText = if (isCritical) "Critical" else "Stable"
-    val statusColor = if (isCritical) Color(0xFFD32F2F) else Color(0xFF006D77)
-    val statusBgColor = if (isCritical) Color(0xFFFFEBEE) else Color(0xFFE0F2F1)
-    val cardBorderColor = if (isCritical) Color(0xFFFFCDD2) else Color(0xFFE3EBF5)
+    val statusColor = if (isCritical) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+    val statusBgColor = if (isCritical) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer
+    val cardBorderColor = if (isCritical) MaterialTheme.colorScheme.error.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceVariant
     val lastVisitDate = paciente.fechaCita?.let {
         SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(it))
     } ?: "N/A"
@@ -226,7 +228,7 @@ fun PatientDatabaseCard(
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, cardBorderColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -240,10 +242,10 @@ fun PatientDatabaseCard(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFE3EBF5)),
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = initial, color = Color(0xFF004D40), fontWeight = FontWeight.Bold)
+                    Text(text = initial, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))
@@ -252,11 +254,11 @@ fun PatientDatabaseCard(
                         text = paciente.nombre,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
-                        color = Color(0xFF1A1A1A)
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = "${paciente.sexo.ifEmpty { "Unknown" }}, ${paciente.edad} yrs",
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp
                     )
                 }
@@ -276,7 +278,7 @@ fun PatientDatabaseCard(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(color = Color(0xFFF0F0F0), thickness = 1.dp)
+            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant, thickness = 1.dp)
             Spacer(modifier = Modifier.height(12.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -284,13 +286,14 @@ fun PatientDatabaseCard(
                 verticalAlignment = Alignment.Bottom
             ) {
                 Column {
-                    Text(text = "LAST VISIT", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Text(text = "LAST VISIT", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(text = lastVisitDate, color = Color.Black, fontSize = 13.sp)
+                    Text(text = lastVisitDate, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp)
                 }
+
                 Column(horizontalAlignment = Alignment.End) {
                     Row(verticalAlignment = Alignment.Bottom) {
-                        Text(text = "HR TREND", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text(text = "HR TREND", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = "${paciente.fc.ifEmpty { "--" }} BPM",

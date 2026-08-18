@@ -1,6 +1,5 @@
 package com.example.micardioat.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -9,35 +8,55 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = PrimaryTealDark,
+    onPrimary = Color.Black,
+    primaryContainer = PrimaryContainerDark,
+    onPrimaryContainer = OnPrimaryContainerDark,
+
+    background = BackgroundDark,
+    onBackground = Color.White,
+
+    surface = SurfaceDark,
+    onSurface = Color.White,
+
+    surfaceVariant = SurfaceVariantDark,
+    onSurfaceVariant = Color.LightGray,
+    outlineVariant = OutlineDark,
+
+    error = ErrorDark,
+    errorContainer = ErrorContainerDark,
+    onErrorContainer = OnErrorContainerDark
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
+    primary = PrimaryTeal,
     onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primaryContainer = PrimaryContainerLight,
+    onPrimaryContainer = OnPrimaryContainerLight,
+
+    background = BackgroundLight,
+    onBackground = Color.Black,
+
+    surface = SurfaceLight,
+    onSurface = Color.Black,
+
+    surfaceVariant = SurfaceVariantLight,
+    onSurfaceVariant = Color.DarkGray,
+    outlineVariant = OutlineLight,
+
+    error = ErrorLight,
+    errorContainer = ErrorContainerLight,
+    onErrorContainer = OnErrorContainerLight
 )
 
 @Composable
 fun MiCardioATTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false, // Kept false to strictly use your brand colors
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -45,7 +64,6 @@ fun MiCardioATTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }

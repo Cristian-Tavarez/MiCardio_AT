@@ -1,11 +1,6 @@
 package com.example.micardioat.presentation.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -14,11 +9,15 @@ import com.example.micardioat.presentation.paciente_list.PacienteEditScreen
 import com.example.micardioat.presentation.paciente_list.PacienteListScreen
 import com.example.micardioat.presentation.paciente_list.PatientsScreen
 import com.example.micardioat.presentation.register.RegisterScreen
+import com.example.micardioat.presentation.settings.SettingsScreen
 import com.example.micardioat.presentation.splash.SplashScreen
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(
+    isDarkMode: Boolean = false,
+    onDarkModeToggle: (Boolean) -> Unit = {}
+) {
     val navController = rememberNavController()
 
     MainAppScreen(navController = navController) { modifier ->
@@ -70,12 +69,6 @@ fun AppNavigation() {
                 PacienteListScreen(
                     onNavigateToDetail = { id ->
                         navController.navigate(Screen.PacienteEdit(pacienteId = id))
-                    },
-                    onLogout = {
-                        FirebaseAuth.getInstance().signOut()
-                        navController.navigate(Screen.Login) {
-                            popUpTo(0) { inclusive = true }
-                        }
                     }
                 )
             }
@@ -100,9 +93,16 @@ fun AppNavigation() {
             }
 
             composable<Screen.Settings> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Settings View")
-                }
+                SettingsScreen(
+                    isDarkMode = isDarkMode,
+                    onDarkModeToggle = onDarkModeToggle,
+                    onLogout = {
+                        FirebaseAuth.getInstance().signOut()
+                        navController.navigate(Screen.Login) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                )
             }
         }
     }
