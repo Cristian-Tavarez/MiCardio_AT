@@ -8,14 +8,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.micardioat.utils.AppThemeMode
 
 @Composable
 fun SettingsScreen(
-    isDarkMode: Boolean,
-    onDarkModeToggle: (Boolean) -> Unit,
+    currentTheme: AppThemeMode,
+    onThemeSelected: (AppThemeMode) -> Unit,
     onLogout: () -> Unit
 ) {
     Column(
@@ -35,31 +37,11 @@ fun SettingsScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Modo Oscuro",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Switch(
-                checked = isDarkMode,
-                onCheckedChange = onDarkModeToggle,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                    checkedTrackColor = MaterialTheme.colorScheme.primary,
-                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            )
-        }
+        ThemeSettingsSection(
+            currentTheme = currentTheme,
+            accentTeal = MaterialTheme.colorScheme.primary,
+            onThemeSelected = onThemeSelected
+        )
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -87,5 +69,82 @@ fun SettingsScreen(
         }
 
         Spacer(modifier = Modifier.height(24.dp))
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ThemeSettingsSection(
+    currentTheme: AppThemeMode,
+    accentTeal: Color,
+    onThemeSelected: (AppThemeMode) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    val themeLabel = when (currentTheme) {
+        AppThemeMode.SYSTEM -> "Predeterminado del sistema"
+        AppThemeMode.LIGHT -> "Claro"
+        AppThemeMode.DARK -> "Oscuro"
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = "Apariencia",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
+            ) {
+                OutlinedTextField(
+                    value = themeLabel,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Modo de Tema") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = accentTeal,
+                        focusedLabelColor = accentTeal
+                    ),
+                    modifier = Modifier
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
+                        .fillMaxWidth()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    AppThemeMode.entries.forEach { mode ->
+                        val label = when (mode) {
+                            AppThemeMode.SYSTEM -> "Predeterminado del sistema"
+                            AppThemeMode.LIGHT -> "Claro"
+                            AppThemeMode.DARK -> "Oscuro"
+                        }
+                        DropdownMenuItem(
+                            text = { Text(label) },
+                            onClick = {
+                                onThemeSelected(mode)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
     }
 }
