@@ -19,14 +19,14 @@ El proyecto sigue los principios de Clean Architecture y patrones de diseño mod
 
 * | Inicio | Pacientes | Ficha Médica |
 * <img width="540" height="1204" alt="WhatsApp Image 2026-08-19 at 8 39 18 AM (2)" src="https://github.com/user-attachments/assets/7ead4cae-5bf6-4c61-9784-7462b34f65e8" />
-<img width="540" height="1204" alt="WhatsApp Image 2026-08-19 at 8 39 19 AM" src="https://github.com/user-attachments/assets/9e639f2e-aa8d-4875-b7f0-d4516bf358d3" />
+<img width="540" height="1204" alt="WhatsApp Image 2026-08-19 at 1 03 59 PM" src="https://github.com/user-attachments/assets/bd9a0bfc-4ba7-4995-843d-60107f42a304" />
 <img width="540" height="1204" alt="WhatsApp Image 2026-08-19 at 8 39 18 AM (3)" src="https://github.com/user-attachments/assets/a2212a0b-ec1d-4d88-aa12-e3a46cd737ab" />
 
 
 * | Login| Historial | Ajustes |
 * <img width="540" height="1204" alt="WhatsApp Image 2026-08-19 at 8 39 18 AM" src="https://github.com/user-attachments/assets/544bbb13-bb5b-4797-9a0f-2541d26c51ca" />
 <img width="540" height="1204" alt="WhatsApp Image 2026-08-19 at 8 39 18 AM (4)" src="https://github.com/user-attachments/assets/2b0f451f-c248-4dd8-879d-7ac2fbc94511" />
-<img width="540" height="1204" alt="WhatsApp Image 2026-08-19 at 8 39 19 AM (1)" src="https://github.com/user-attachments/assets/dfd9676b-235b-48eb-96a5-b1d7cf35ab6f" />
+<img width="540" height="1204" alt="WhatsApp Image 2026-08-19 at 1 04 00 PM" src="https://github.com/user-attachments/assets/c01e12df-a579-4495-9d3e-14d6ad885445" />
 
 
 ## 📂 Estructura del Proyecto
