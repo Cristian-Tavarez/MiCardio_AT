@@ -11,12 +11,13 @@ import com.example.micardioat.presentation.paciente_list.PatientsScreen
 import com.example.micardioat.presentation.register.RegisterScreen
 import com.example.micardioat.presentation.settings.SettingsScreen
 import com.example.micardioat.presentation.splash.SplashScreen
+import com.example.micardioat.utils.AppThemeMode
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun AppNavigation(
-    isDarkMode: Boolean = false,
-    onDarkModeToggle: (Boolean) -> Unit = {}
+    currentTheme: AppThemeMode = AppThemeMode.SYSTEM,
+    onThemeChange: (AppThemeMode) -> Unit = {}
 ) {
     val navController = rememberNavController()
 
@@ -94,8 +95,8 @@ fun AppNavigation(
 
             composable<Screen.Settings> {
                 SettingsScreen(
-                    isDarkMode = isDarkMode,
-                    onDarkModeToggle = onDarkModeToggle,
+                    currentTheme = currentTheme,
+                    onThemeSelected = onThemeChange,
                     onLogout = {
                         FirebaseAuth.getInstance().signOut()
                         navController.navigate(Screen.Login) {
@@ -104,6 +105,8 @@ fun AppNavigation(
                     }
                 )
             }
+
         }
+
     }
 }
