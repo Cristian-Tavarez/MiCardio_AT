@@ -15,6 +15,10 @@ El proyecto sigue los principios de Clean Architecture y patrones de diseño mod
 
 * **Lenguaje:** Kotlin
 
+**YouTube Videos**
+https://youtu.be/UGil4ZfV3PQ
+https://youtu.be/ZZDf87I6TLI
+
 * ## 📱 Capturas de Pantalla
 
 * | Inicio | Pacientes | Ficha Médica |
