@@ -3,6 +3,7 @@ package com.example.micardioat.domain.model
 data class Paciente(
     val pacienteId: Int? = null,
     val nombre: String,
+    val apellido: String = "",
     val edad: Int,
     val sexo: String = "",
     val antecedentesQuirurgicos: String = "",

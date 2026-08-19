@@ -13,6 +13,7 @@ data class PacienteFormUiState(
 
     val pacienteId: Int? = null,
     val nombre: String = "",
+    val apellido: String = "",
     val edad: String = "",
     val sexo: String = "",
     val antecedentesQuirurgicos: String = "",
@@ -37,6 +38,7 @@ data class PacienteFormUiState(
     val fechaCita: Long? = null,
 
     val nombreError: String? = null,
+    val apellidoError: String? = null,
     val edadError: String? = null,
     val sexoError: String? = null,
     val motivoConsultaError: String? = null,

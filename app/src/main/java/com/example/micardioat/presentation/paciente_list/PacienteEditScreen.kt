@@ -236,9 +236,22 @@ fun PacienteEditBody(
                     OutlinedTextField(
                         value = state.nombre,
                         onValueChange = { onEvent(PacienteFormUiEvent.NombreChanged(it)) },
-                        label = { Text("Nombre Completo *") },
+                        label = { Text("Nombre *") },
                         isError = state.nombreError != null,
                         supportingText = { state.nombreError?.let { Text(it, color = errorColor) } },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        readOnly = !isFormEditable,
+                        enabled = isFormEditable,
+                        colors = inputColors
+                    )
+
+                    OutlinedTextField(
+                        value = state.apellido,
+                        onValueChange = { onEvent(PacienteFormUiEvent.ApellidoChanged(it)) },
+                        label = { Text("Apellido *") },
+                        isError = state.apellidoError != null,
+                        supportingText = { state.apellidoError?.let { Text(it, color = errorColor) } },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         readOnly = !isFormEditable,
@@ -296,11 +309,17 @@ fun PacienteEditBody(
                             enabled = isFormEditable,
                             colors = inputColors
                         )
+
                         OutlinedTextField(
                             value = state.fc,
-                            onValueChange = { onEvent(PacienteFormUiEvent.FcChanged(it)) },
+                            onValueChange = { newValue ->
+                                if (newValue.all { it.isDigit() }) {
+                                    onEvent(PacienteFormUiEvent.FcChanged(newValue))
+                                }
+                            },
                             label = { Text("FC") },
                             modifier = Modifier.weight(1f),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
                             readOnly = !isFormEditable,
                             enabled = isFormEditable,
@@ -421,6 +440,7 @@ fun PacienteEditBody(
         }
     }
 }
+
 @Composable
 fun VisitaHistoryVerticalCard(visita: Visita, formatter: SimpleDateFormat) {
     Card(

@@ -234,7 +234,7 @@ fun PacienteListBody(
                             cardBgColor = cardBackground,
                             textColor = textPrimary,
                             subTextColor = textSecondary,
-                            name = paciente.nombre,
+                            name = "${paciente.nombre} ${paciente.apellido}".trim(),
                             details = detailsText.ifBlank { "Sin especificar" },
                             modifier = Modifier.clickable {
                                 onNavigateToDetail(paciente.pacienteId)

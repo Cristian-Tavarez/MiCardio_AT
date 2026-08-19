@@ -43,6 +43,9 @@ class PacienteAddViewModel @Inject constructor(
             is PacienteFormUiEvent.NombreChanged -> _state.update {
                 it.copy(nombre = event.value, nombreError = null)
             }
+            is PacienteFormUiEvent.ApellidoChanged -> _state.update {
+                it.copy(apellido = event.value, apellidoError = null)
+            }
             is PacienteFormUiEvent.EdadChanged -> _state.update {
                 it.copy(edad = event.value, edadError = null)
             }
@@ -59,7 +62,7 @@ class PacienteAddViewModel @Inject constructor(
                 it.copy(motivoConsulta = event.value, motivoConsultaError = null)
             }
             is PacienteFormUiEvent.FcChanged -> _state.update {
-                it.copy(fc = event.value)
+                it.copy(fc = event.value.filter { char -> char.isDigit() })
             }
             is PacienteFormUiEvent.FrChanged -> _state.update {
                 it.copy(fr = event.value)
@@ -124,6 +127,7 @@ class PacienteAddViewModel @Inject constructor(
                                     isNew = false,
                                     pacienteId = paciente.pacienteId,
                                     nombre = paciente.nombre,
+                                    apellido = paciente.apellido,
                                     edad = paciente.edad.toString(),
                                     sexo = paciente.sexo,
                                     antecedentesQuirurgicos = paciente.antecedentesQuirurgicos,
@@ -167,15 +171,17 @@ class PacienteAddViewModel @Inject constructor(
         val s = state.value
 
         val nombreError = if (s.nombre.isBlank()) "El nombre es obligatorio" else null
+        val apellidoError = if (s.apellido.isBlank()) "El apellido es obligatorio" else null
         val edadError = if (s.edad.isBlank()) "La edad es obligatoria" else null
         val sexoError = if (s.sexo.isBlank()) "El sexo es obligatorio" else null
         val motivoError = if (s.motivoConsulta.isBlank()) "El motivo es obligatorio" else null
         val fechaError = if (s.fechaCita == null) "Debe seleccionar una fecha" else null
 
-        if (nombreError != null || edadError != null || sexoError != null || motivoError != null || fechaError != null) {
+        if (nombreError != null || apellidoError != null || edadError != null || sexoError != null || motivoError != null || fechaError != null) {
             _state.update {
                 it.copy(
                     nombreError = nombreError,
+                    apellidoError = apellidoError,
                     edadError = edadError,
                     sexoError = sexoError,
                     motivoConsultaError = motivoError,
@@ -191,6 +197,7 @@ class PacienteAddViewModel @Inject constructor(
             val paciente = Paciente(
                 pacienteId = s.pacienteId,
                 nombre = s.nombre.trim(),
+                apellido = s.apellido.trim(),
                 edad = s.edad.trim().toIntOrNull() ?: 0,
                 sexo = s.sexo.trim(),
                 antecedentesQuirurgicos = s.antecedentesQuirurgicos,
