@@ -112,4 +112,6 @@ dependencies {
 
     testImplementation(libs.robolectric)
     testImplementation(libs.turbine)
+
+    implementation(libs.coil.gif)
 }
