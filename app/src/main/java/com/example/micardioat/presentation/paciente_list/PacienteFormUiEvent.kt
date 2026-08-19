@@ -4,6 +4,8 @@ sealed interface PacienteFormUiEvent {
     data class Load(val id: Int?) : PacienteFormUiEvent
 
     data class NombreChanged(val value: String) : PacienteFormUiEvent
+
+    data class ApellidoChanged(val value: String) : PacienteFormUiEvent
     data class EdadChanged(val value: String) : PacienteFormUiEvent
     data class DiagnosticoChanged(val value: String) : PacienteFormUiEvent
     data class PresionArterialChanged(val value: String) : PacienteFormUiEvent
