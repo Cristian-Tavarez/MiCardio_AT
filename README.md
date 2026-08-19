@@ -15,8 +15,12 @@ El proyecto sigue los principios de Clean Architecture y patrones de diseño mod
 
 * **Lenguaje:** Kotlin
 
-**YouTube Videos**
+# YouTube Videos
+
+**English**
 https://youtu.be/UGil4ZfV3PQ
+
+**Spanish**
 https://youtu.be/ZZDf87I6TLI
 
 * ## 📱 Capturas de Pantalla
