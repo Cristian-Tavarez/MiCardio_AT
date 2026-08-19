@@ -25,8 +25,8 @@ fun MainAppScreen(
 
     val selectedItem = when {
         currentDestination?.contains("PacienteList") == true -> 0
-        currentDestination?.contains("Patients") == true -> 1
-        currentDestination?.contains("Settings") == true -> 2
+        currentDestination?.contains("Pacientes") == true -> 1
+        currentDestination?.contains("Ajustes") == true -> 2
         else -> 0
     }
 
