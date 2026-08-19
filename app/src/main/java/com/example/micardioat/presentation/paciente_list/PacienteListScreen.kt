@@ -17,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,6 +26,7 @@ import com.example.micardioat.domain.model.PacienteDetalle
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 
 @Composable
 fun PacienteListScreen(
@@ -49,7 +49,7 @@ fun PacienteListBody(
     onNavigateToDetail: (Int?) -> Unit,
     onQuickSchedule: (PacienteDetalle, Long) -> Unit
 ) {
-    val currentLocale = LocalConfiguration.current.locales[0]
+    val currentLocale = Locale.forLanguageTag("es-DO")
 
     val lightBackground = MaterialTheme.colorScheme.background
     val accentTeal = MaterialTheme.colorScheme.primary
@@ -258,7 +258,8 @@ fun QuickScheduleDialog(
 ) {
     var expanded by remember { mutableStateOf(false) }
     var selectedDetalle by remember { mutableStateOf<PacienteDetalle?>(null) }
-    val displayDate = SimpleDateFormat("dd/MM/yyyy", LocalConfiguration.current.locales[0]).format(Date(selectedDateMillis))
+    val displayDate = SimpleDateFormat("dd/MM/yyyy",
+        Locale.forLanguageTag("es-DO")).format(Date(selectedDateMillis))
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -338,7 +339,7 @@ fun HorizontalCalendar(
     primaryTextColor: Color,
     secondaryTextColor: Color
 ) {
-    val currentLocale = LocalConfiguration.current.locales[0]
+    val currentLocale = Locale.forLanguageTag("es-DO")
 
     val days = remember {
         val calendar = Calendar.getInstance()
@@ -445,12 +446,14 @@ fun AppointmentCard(
 }
 
 fun isSameDay(utcMillis: Long, localMillis: Long): Boolean {
-    val utcFormatter = SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).apply {
+    val currentLocale = Locale.forLanguageTag("es-DO")
+
+    val utcFormatter = SimpleDateFormat("yyyy-MM-dd", currentLocale).apply {
         timeZone = java.util.TimeZone.getTimeZone("UTC")
     }
     val dateFromDb = utcFormatter.format(Date(utcMillis))
 
-    val localFormatter = SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+    val localFormatter = SimpleDateFormat("yyyy-MM-dd", currentLocale)
     val dateFromCalendar = localFormatter.format(Date(localMillis))
 
     return dateFromDb == dateFromCalendar
