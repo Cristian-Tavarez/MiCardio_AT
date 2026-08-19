@@ -15,6 +15,7 @@ data class PacienteEntity(
     @PrimaryKey(autoGenerate = true)
     val pacienteId: Int? = null,
     val nombre: String,
+    val apellido: String = "",
     val edad: Int,
     val sexo: String = "",
     val antecedentesQuirurgicos: String = "",
@@ -66,6 +67,7 @@ fun PacienteEntity.toDomain(): Paciente {
     return Paciente(
         pacienteId = pacienteId,
         nombre = nombre,
+        apellido = apellido,
         edad = edad,
         sexo = sexo,
         antecedentesQuirurgicos = antecedentesQuirurgicos,
@@ -78,6 +80,7 @@ fun Paciente.toEntity(): PacienteEntity {
     return PacienteEntity(
         pacienteId = pacienteId,
         nombre = nombre,
+        apellido = apellido,
         edad = edad,
         sexo = sexo,
         antecedentesQuirurgicos = antecedentesQuirurgicos,
