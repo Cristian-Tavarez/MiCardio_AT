@@ -1,7 +1,6 @@
 package com.example.micardioat.presentation.paciente_list
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,24 +10,21 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.micardioat.domain.model.PacienteDetalle
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,10 +34,10 @@ fun PatientsScreen(
     viewModel: PacienteListViewModel = hiltViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    var selectedFilter by remember { mutableStateOf("All Patients") }
+    var selectedFilter by remember { mutableStateOf("Pacientes") }
 
     val allPatients by viewModel.pacientes.collectAsState()
-    val filters = listOf("All Patients", "Recent", "High Risk", "Chronic")
+    val filters = listOf("Pacientes", "Recientes", "Riesgo alto", "Cronico")
 
     val filteredAndSortedPatients = allPatients
         .filter { detalle ->
@@ -52,7 +48,7 @@ fun PatientsScreen(
             val matchesSearch = paciente.nombre.contains(searchQuery, ignoreCase = true)
 
             val matchesFilter = when (selectedFilter) {
-                "High Risk" -> {
+                "Riesgo alto" -> {
                     val heartRate = ultimaVisita?.fc?.toIntOrNull() ?: 0
                     val diag = ultimaVisita?.diagnostico ?: ""
                     heartRate > 100 || diag.contains("Critical", ignoreCase = true)
@@ -70,7 +66,7 @@ fun PatientsScreen(
         }
         .let { filteredList ->
             when (selectedFilter) {
-                "Recent" -> {
+                "Reciente" -> {
                     filteredList.sortedByDescending { detalle ->
                         detalle.visitas.maxOfOrNull { it.fechaCita ?: 0L } ?: 0L
                     }
@@ -82,16 +78,6 @@ fun PatientsScreen(
         }
 
     Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddPatient,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Patient")
-            }
-        },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
@@ -124,16 +110,18 @@ fun PatientsScreen(
                         fontSize = 18.sp
                     )
                 }
-                Icon(
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = "Notifications",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                IconButton(onClick = onAddPatient) {
+                    Icon(
+                        imageVector = Icons.Default.PersonAdd,
+                        contentDescription = "Agregar Paciente",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "Patient Database",
+                text = "Base de Datos de Pacientes",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
@@ -145,7 +133,7 @@ fun PatientsScreen(
                 onValueChange = { searchQuery = it },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = {
-                    Text("Search patients by name, ID, or conditi...", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                    Text("Buscar pacientes por nombre, ID o condici...", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                 },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                 colors = OutlinedTextFieldDefaults.colors(
@@ -194,7 +182,7 @@ fun PatientsScreen(
             Spacer(modifier = Modifier.height(16.dp))
             if (filteredAndSortedPatients.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No patients found.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("No se encontraron pacientes.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             } else {
                 LazyColumn(
@@ -224,15 +212,15 @@ fun PatientDatabaseCard(
 
     val heartRate = ultimaVisita?.fc?.toIntOrNull() ?: 0
     val diagnostico = ultimaVisita?.diagnostico ?: ""
-    val isCritical = heartRate > 100 || diagnostico.contains("Critical", ignoreCase = true)
+    val isCritical = heartRate > 100 || diagnostico.contains("Critical", ignoreCase = true) || diagnostico.contains("Crítico", ignoreCase = true)
 
-    val statusText = if (isCritical) "Critical" else "Stable"
+    val statusText = if (isCritical) "Crítico" else "Estable"
     val statusColor = if (isCritical) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
     val statusBgColor = if (isCritical) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer
     val cardBorderColor = if (isCritical) MaterialTheme.colorScheme.error.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceVariant
 
     val lastVisitDate = ultimaVisita?.fechaCita?.let {
-        SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(it))
+        SimpleDateFormat("MMM dd, yyyy", Locale("es", "DO")).format(Date(it))
     } ?: "N/A"
 
     Card(
@@ -269,7 +257,7 @@ fun PatientDatabaseCard(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "${paciente.sexo.ifEmpty { "Unknown" }}, ${paciente.edad} yrs",
+                        text = "${paciente.sexo.ifEmpty { "Desconocido" }}, ${paciente.edad} años",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp
                     )
@@ -298,14 +286,14 @@ fun PatientDatabaseCard(
                 verticalAlignment = Alignment.Bottom
             ) {
                 Column {
-                    Text(text = "LAST VISIT", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Text(text = "ÚLTIMA VISITA", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(text = lastVisitDate, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp)
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
                     Row(verticalAlignment = Alignment.Bottom) {
-                        Text(text = "HR TREND", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text(text = "TENDENCIA FC", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = "${ultimaVisita?.fc?.ifEmpty { "--" } ?: "--"} BPM",
@@ -314,29 +302,8 @@ fun PatientDatabaseCard(
                             fontWeight = FontWeight.Bold
                         )
                     }
-                    Spacer(modifier = Modifier.height(4.dp))
-                    MiniSparkline(color = statusColor)
                 }
             }
         }
-    }
-}
-
-@Composable
-fun MiniSparkline(color: Color) {
-    Canvas(modifier = Modifier.width(70.dp).height(16.dp)) {
-        val path = Path().apply {
-            moveTo(0f, size.height * 0.7f)
-            lineTo(size.width * 0.2f, size.height * 0.4f)
-            lineTo(size.width * 0.4f, size.height * 0.8f)
-            lineTo(size.width * 0.6f, size.height * 0.2f)
-            lineTo(size.width * 0.8f, size.height * 0.6f)
-            lineTo(size.width, size.height * 0.4f)
-        }
-        drawPath(
-            path = path,
-            color = color,
-            style = Stroke(width = 3f)
-        )
     }
 }

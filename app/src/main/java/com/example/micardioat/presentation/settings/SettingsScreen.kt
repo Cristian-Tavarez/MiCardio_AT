@@ -1,15 +1,21 @@
 package com.example.micardioat.presentation.settings
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.micardioat.utils.AppThemeMode
@@ -43,6 +49,10 @@ fun SettingsScreen(
             onThemeSelected = onThemeSelected
         )
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        AboutSection()
+
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
@@ -68,25 +78,26 @@ fun SettingsScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "MiCardio_AT v1.0.0",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ThemeSettingsSection(
     currentTheme: AppThemeMode,
     accentTeal: Color,
     onThemeSelected: (AppThemeMode) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
-
-    val themeLabel = when (currentTheme) {
-        AppThemeMode.SYSTEM -> "Predeterminado del sistema"
-        AppThemeMode.LIGHT -> "Claro"
-        AppThemeMode.DARK -> "Oscuro"
-    }
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -106,45 +117,95 @@ fun ThemeSettingsSection(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                OutlinedTextField(
-                    value = themeLabel,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Modo de Tema") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = accentTeal,
-                        focusedLabelColor = accentTeal
-                    ),
-                    modifier = Modifier
-                        .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
-                        .fillMaxWidth()
-                )
+                AppThemeMode.entries.forEach { mode ->
+                    val isSelected = currentTheme == mode
 
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    AppThemeMode.entries.forEach { mode ->
-                        val label = when (mode) {
-                            AppThemeMode.SYSTEM -> "Predeterminado del sistema"
-                            AppThemeMode.LIGHT -> "Claro"
-                            AppThemeMode.DARK -> "Oscuro"
+                    val (label, icon) = when (mode) {
+                        AppThemeMode.SYSTEM -> "Sistema" to Icons.Default.Settings
+                        AppThemeMode.LIGHT -> "Claro" to Icons.Default.LightMode
+                        AppThemeMode.DARK -> "Oscuro" to Icons.Default.DarkMode
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(40.dp),
+                        shape = MaterialTheme.shapes.medium,
+                        color = if (isSelected) accentTeal else MaterialTheme.colorScheme.surface,
+                        contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                        border = if (!isSelected) {
+                            BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                        } else null,
+                        onClick = {
+                            onThemeSelected(mode)
                         }
-                        DropdownMenuItem(
-                            text = { Text(label) },
-                            onClick = {
-                                onThemeSelected(mode)
-                                expanded = false
-                            }
-                        )
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = label,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = label,
+                                fontSize = 12.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                maxLines = 1
+                            )
+                        }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun AboutSection() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Acerca de MiCardio_AT",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "MiCardio_AT es una aplicación moderna diseñada para el monitoreo y gestión de la salud cardiovascular. Permite registrar signos vitales, administrar perfiles de pacientes y visualizar métricas del corazón de manera rápida, intuitiva y segura.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 20.sp
+            )
         }
     }
 }
