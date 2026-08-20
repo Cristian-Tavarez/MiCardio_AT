@@ -5,8 +5,11 @@ import androidx.room.Room
 import com.example.micardioat.data.dao.PacienteDao
 import com.example.micardioat.data.dao.UsuarioDao
 import com.example.micardioat.data.database.AppDatabase
+import com.example.micardioat.data.repository.AuthRepository
+import com.example.micardioat.data.repository.AuthRepositoryImpl
 import com.example.micardioat.data.repository.PacienteCardiologiaRepository
 import com.example.micardioat.domain.use_case.*
+import com.example.micardioat.utils.ThemePreferences
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
@@ -14,7 +17,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
-import com.example.micardioat.utils.ThemePreferences
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -46,6 +48,12 @@ object AppModule {
     @Singleton
     fun providePacienteCardiologiaRepository(dao: PacienteDao): PacienteCardiologiaRepository {
         return PacienteCardiologiaRepository(dao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthRepository(auth: FirebaseAuth): AuthRepository {
+        return AuthRepositoryImpl(auth)
     }
 
     @Provides
