@@ -21,7 +21,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.micardioat.R
 import com.example.micardioat.utils.Resource
 
@@ -33,22 +33,34 @@ fun RegisterScreen(
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
-
     val state by viewModel.state.collectAsState()
+
+    val registerState = state.registerState
 
     val tealColor = Color(0xFF006D77)
     val inputBackgroundColor = Color(0xFF3F3F3F)
 
-    LaunchedEffect(state) {
-        when (val currentState = state) {
+    LaunchedEffect(registerState) {
+        when (registerState) {
             is Resource.Success -> {
-                Toast.makeText(context, "¡Usuario registrado!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    "¡Usuario registrado!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
                 onRegisterSuccess()
             }
+
             is Resource.Error -> {
-                Toast.makeText(context, currentState.message ?: "Error", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    registerState.message ?: "Error",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
-            else -> {}
+
+            else -> Unit
         }
     }
 
@@ -58,13 +70,20 @@ fun RegisterScreen(
                 title = { Text("") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás", tint = Color.Black)
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Atrás",
+                            tint = Color.Black
+                        )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White
+                )
             )
         }
     ) { padding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -74,6 +93,7 @@ fun RegisterScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+
             Image(
                 painter = painterResource(id = R.drawable.ic_heart),
                 contentDescription = "Logo Corazón",
@@ -82,80 +102,152 @@ fun RegisterScreen(
                     .padding(bottom = 16.dp)
             )
 
-            Text("Crear Cuenta", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = tealColor)
+            Text(
+                text = "Crear Cuenta",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = tealColor
+            )
+
             Spacer(modifier = Modifier.height(20.dp))
 
-            Text("Correo Electrónico", fontSize = 14.sp, color = Color.Black, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+            Text(
+                text = "Correo Electrónico",
+                fontSize = 14.sp,
+                color = Color.Black,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Spacer(modifier = Modifier.height(4.dp))
+
             TextField(
-                value = viewModel.usuario,
-                onValueChange = { viewModel.usuario = it },
+                value = state.usuario,
+                onValueChange = {
+                    viewModel.onEvent(
+                        RegisterUiEvent.UsuarioChanged(it)
+                    )
+                },
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email
+                ),
                 shape = RoundedCornerShape(24.dp),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = inputBackgroundColor,
                     unfocusedContainerColor = inputBackgroundColor,
-                    focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                    focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
                 ),
-                modifier = Modifier.fillMaxWidth().height(50.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text("Contraseña", fontSize = 14.sp, color = Color.Black, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+            Text(
+                text = "Contraseña",
+                fontSize = 14.sp,
+                color = Color.Black,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Spacer(modifier = Modifier.height(4.dp))
+
             TextField(
-                value = viewModel.clave,
-                onValueChange = { viewModel.clave = it },
+                value = state.clave,
+                onValueChange = {
+                    viewModel.onEvent(
+                        RegisterUiEvent.ClaveChanged(it)
+                    )
+                },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password
+                ),
                 shape = RoundedCornerShape(24.dp),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = inputBackgroundColor,
                     unfocusedContainerColor = inputBackgroundColor,
-                    focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                    focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
                 ),
-                modifier = Modifier.fillMaxWidth().height(50.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text("Confirmar Contraseña", fontSize = 14.sp, color = Color.Black, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+            Text(
+                text = "Confirmar Contraseña",
+                fontSize = 14.sp,
+                color = Color.Black,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Spacer(modifier = Modifier.height(4.dp))
+
             TextField(
-                value = viewModel.confirmarClave,
-                onValueChange = { viewModel.confirmarClave = it },
+                value = state.confirmarClave,
+                onValueChange = {
+                    viewModel.onEvent(
+                        RegisterUiEvent.ConfirmarClaveChanged(it)
+                    )
+                },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password
+                ),
                 shape = RoundedCornerShape(24.dp),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = inputBackgroundColor,
                     unfocusedContainerColor = inputBackgroundColor,
-                    focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                    focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
                 ),
-                modifier = Modifier.fillMaxWidth().height(50.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-
-                onClick = { viewModel.onEvent() },
+                onClick = {
+                    viewModel.onEvent(RegisterUiEvent.Register)
+                },
                 shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = tealColor),
-                modifier = Modifier.width(160.dp).height(44.dp),
-                enabled = state !is Resource.Loading
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = tealColor
+                ),
+                modifier = Modifier
+                    .width(160.dp)
+                    .height(44.dp),
+                enabled = registerState !is Resource.Loading
             ) {
-                if (state is Resource.Loading) {
-                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
+                if (registerState is Resource.Loading) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
                 } else {
-                    Text("Registrarse", color = Color.White, fontSize = 16.sp)
+                    Text(
+                        text = "Registrarse",
+                        color = Color.White,
+                        fontSize = 16.sp
+                    )
                 }
             }
         }

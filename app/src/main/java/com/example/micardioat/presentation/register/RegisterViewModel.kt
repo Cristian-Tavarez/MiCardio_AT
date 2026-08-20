@@ -1,53 +1,116 @@
 package com.example.micardioat.presentation.register
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.micardioat.data.repository.AuthRepository
 import com.example.micardioat.utils.Resource
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val auth: FirebaseAuth
 ) : ViewModel() {
 
-    var usuario by mutableStateOf("")
-    var clave by mutableStateOf("")
-    var confirmarClave by mutableStateOf("")
+    private val _state = MutableStateFlow(RegisterUiState())
+    val state: StateFlow<RegisterUiState> = _state.asStateFlow()
 
-    private val _state = MutableStateFlow<Resource<Boolean>?>(null)
-    val state: StateFlow<Resource<Boolean>?> = _state.asStateFlow()
+    fun onEvent(event: RegisterUiEvent) {
+        when (event) {
+            is RegisterUiEvent.UsuarioChanged -> {
+                _state.update {
+                    it.copy(usuario = event.value)
+                }
+            }
 
-    fun onEvent() {
-        val email = usuario.trim()
+            is RegisterUiEvent.ClaveChanged -> {
+                _state.update {
+                    it.copy(clave = event.value)
+                }
+            }
 
-        if (email.isBlank() || clave.isBlank() || confirmarClave.isBlank()) {
-            _state.value = Resource.Error("Por favor completa todos los campos")
+            is RegisterUiEvent.ConfirmarClaveChanged -> {
+                _state.update {
+                    it.copy(confirmarClave = event.value)
+                }
+            }
+
+            RegisterUiEvent.Register -> {
+                onRegister()
+            }
+        }
+    }
+
+    private fun onRegister() {
+        val currentState = state.value
+        val email = currentState.usuario.trim()
+        val clave = currentState.clave
+        val confirmarClave = currentState.confirmarClave
+
+        if (
+            email.isBlank() ||
+            clave.isBlank() ||
+            confirmarClave.isBlank()
+        ) {
+            _state.update {
+                it.copy(
+                    registerState =
+                        Resource.Error("Por favor completa todos los campos")
+                )
+            }
             return
         }
 
         if (clave != confirmarClave) {
-            _state.value = Resource.Error("Las contraseñas no coinciden")
+            _state.update {
+                it.copy(
+                    registerState =
+                        Resource.Error("Las contraseñas no coinciden")
+                )
+            }
             return
         }
 
         if (clave.length < 6) {
-            _state.value = Resource.Error("La contraseña debe tener al menos 6 caracteres")
+            _state.update {
+                it.copy(
+                    registerState =
+                        Resource.Error(
+                            "La contraseña debe tener al menos 6 caracteres"
+                        )
+                )
+            }
             return
         }
 
-        _state.value = Resource.Loading()
+        _state.update {
+            it.copy(registerState = Resource.Loading())
+        }
 
         viewModelScope.launch {
-            _state.value = authRepository.registerUser(email, clave)
+            auth.createUserWithEmailAndPassword(email, clave)
+                .addOnSuccessListener {
+                    _state.update {
+                        it.copy(
+                            registerState = Resource.Success(true)
+                        )
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    _state.update {
+                        it.copy(
+                            registerState = Resource.Error(
+                                exception.localizedMessage
+                                    ?: "Error al registrar el usuario"
+                            )
+                        )
+                    }
+                }
         }
     }
 }

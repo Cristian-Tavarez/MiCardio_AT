@@ -5,10 +5,8 @@ import androidx.room.Room
 import com.example.micardioat.data.dao.PacienteDao
 import com.example.micardioat.data.dao.UsuarioDao
 import com.example.micardioat.data.database.AppDatabase
-import com.example.micardioat.data.repository.AuthRepository
-import com.example.micardioat.data.repository.AuthRepositoryImpl
-import com.example.micardioat.data.repository.PacienteCardiologiaRepository
-import com.example.micardioat.domain.use_case.*
+import com.example.micardioat.domain.use_case.LoginUseCase
+import com.example.micardioat.domain.use_case.RegisterUseCase
 import com.example.micardioat.utils.ThemePreferences
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
@@ -42,42 +40,6 @@ object AppModule {
     @Singleton
     fun providePacienteDao(appDatabase: AppDatabase): PacienteDao {
         return appDatabase.pacienteDao()
-    }
-
-    @Provides
-    @Singleton
-    fun providePacienteCardiologiaRepository(dao: PacienteDao): PacienteCardiologiaRepository {
-        return PacienteCardiologiaRepository(dao)
-    }
-
-    @Provides
-    @Singleton
-    fun provideAuthRepository(auth: FirebaseAuth): AuthRepository {
-        return AuthRepositoryImpl(auth)
-    }
-
-    @Provides
-    @Singleton
-    fun provideGetPacientesUseCase(repository: PacienteCardiologiaRepository): GetPacientesUseCase {
-        return GetPacientesUseCase(repository)
-    }
-
-    @Provides
-    @Singleton
-    fun provideGetPacienteByIdUseCase(repository: PacienteCardiologiaRepository): GetPacienteByIdUseCase {
-        return GetPacienteByIdUseCase(repository)
-    }
-
-    @Provides
-    @Singleton
-    fun provideSavePacienteUseCase(repository: PacienteCardiologiaRepository): SavePacienteUseCase {
-        return SavePacienteUseCase(repository)
-    }
-
-    @Provides
-    @Singleton
-    fun provideDeletePacienteUseCase(repository: PacienteCardiologiaRepository): DeletePacienteUseCase {
-        return DeletePacienteUseCase(repository)
     }
 
     @Provides
