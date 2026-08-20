@@ -26,7 +26,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.micardioat.domain.model.Visita
 import java.text.SimpleDateFormat
@@ -35,7 +34,7 @@ import java.util.Locale
 
 @Composable
 fun PacienteEditScreen(
-    viewModel: PacienteAddViewModel = hiltViewModel(),
+    viewModel: PacienteAddViewModel,
     onNavigateBack: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()

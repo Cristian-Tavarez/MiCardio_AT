@@ -91,27 +91,23 @@ dependencies {
     ksp(libs.room.compiler)
     implementation(libs.play.services.tasks)
 
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.navigation.runtime.ktx)
-
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-    implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.core)
 
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+
+    implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.androidx.datastore.preferences)
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
     ksp(libs.kotlin.metadata.jvm)
-    implementation(libs.androidx.hilt.navigation.compose)
 
     testImplementation(libs.robolectric)
     testImplementation(libs.turbine)
-
     implementation(libs.coil.gif)
 }
