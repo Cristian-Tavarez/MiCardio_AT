@@ -5,34 +5,43 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.currentBackStackEntryAsState
 
 @Composable
 fun MainAppScreen(
-    navController: NavController,
+    backStack: SnapshotStateList<Screen>,
     content: @Composable (Modifier) -> Unit
 ) {
     val items = listOf("Inicio", "Pacientes", "Ajustes")
-    val icons = listOf(Icons.Default.DateRange, Icons.Default.People, Icons.Default.Settings)
 
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination?.route
+    val icons = listOf(
+        Icons.Default.DateRange,
+        Icons.Default.People,
+        Icons.Default.Settings
+    )
 
-    val selectedItem = when {
-        currentDestination?.contains("PacienteList") == true -> 0
-        currentDestination?.contains("Patients") == true -> 1
-        currentDestination?.contains("Settings") == true -> 2
+    val currentDestination = backStack.lastOrNull()
+
+    val selectedItem = when (currentDestination) {
+        Screen.PacienteList -> 0
+        Screen.Patients -> 1
+        Screen.Settings -> 2
         else -> 0
     }
 
-    val showBottomBar = currentDestination?.contains("PacienteList") == true ||
-            currentDestination?.contains("Patients") == true ||
-            currentDestination?.contains("Settings") == true
+    val showBottomBar =
+        currentDestination == Screen.PacienteList ||
+                currentDestination == Screen.Patients ||
+                currentDestination == Screen.Settings
 
     Scaffold(
         bottomBar = {
@@ -43,29 +52,39 @@ fun MainAppScreen(
                 ) {
                     items.forEachIndexed { index, item ->
                         NavigationBarItem(
-                            icon = { Icon(icons[index], contentDescription = item) },
-                            label = { Text(item) },
+                            icon = {
+                                Icon(
+                                    imageVector = icons[index],
+                                    contentDescription = item
+                                )
+                            },
+                            label = {
+                                Text(item)
+                            },
                             selected = selectedItem == index,
                             onClick = {
-                                val route = when(index) {
+                                val destination = when (index) {
                                     0 -> Screen.PacienteList
                                     1 -> Screen.Patients
                                     else -> Screen.Settings
                                 }
-                                navController.navigate(route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
+
+                                if (currentDestination != destination) {
+                                    backStack.clear()
+                                    backStack.add(destination)
                                 }
                             },
                             colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = MaterialTheme.colorScheme.primary,
-                                selectedTextColor = MaterialTheme.colorScheme.primary,
-                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                selectedIconColor =
+                                    MaterialTheme.colorScheme.primary,
+                                selectedTextColor =
+                                    MaterialTheme.colorScheme.primary,
+                                indicatorColor =
+                                    MaterialTheme.colorScheme.primaryContainer,
+                                unselectedIconColor =
+                                    MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor =
+                                    MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         )
                     }

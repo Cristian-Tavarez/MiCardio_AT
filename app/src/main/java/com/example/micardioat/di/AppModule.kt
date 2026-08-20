@@ -100,7 +100,9 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideThemePreferences(@ApplicationContext context: Context): ThemePreferences {
+    fun provideThemePreferences(
+        @ApplicationContext context: Context
+    ): ThemePreferences {
         return ThemePreferences(context)
     }
 }
