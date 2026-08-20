@@ -33,19 +33,20 @@ fun RegisterScreen(
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val registerState by viewModel.registerState.collectAsState()
+
+    val state by viewModel.state.collectAsState()
 
     val tealColor = Color(0xFF006D77)
     val inputBackgroundColor = Color(0xFF3F3F3F)
 
-    LaunchedEffect(registerState) {
-        when (registerState) {
+    LaunchedEffect(state) {
+        when (val currentState = state) {
             is Resource.Success -> {
                 Toast.makeText(context, "¡Usuario registrado!", Toast.LENGTH_SHORT).show()
                 onRegisterSuccess()
             }
             is Resource.Error -> {
-                Toast.makeText(context, registerState?.message ?: "Error", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, currentState.message ?: "Error", Toast.LENGTH_SHORT).show()
             }
             else -> {}
         }
@@ -144,13 +145,14 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { viewModel.onRegister() },
+
+                onClick = { viewModel.onEvent() },
                 shape = RoundedCornerShape(24.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = tealColor),
                 modifier = Modifier.width(160.dp).height(44.dp),
-                enabled = registerState !is Resource.Loading
+                enabled = state !is Resource.Loading
             ) {
-                if (registerState is Resource.Loading) {
+                if (state is Resource.Loading) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
                 } else {
                     Text("Registrarse", color = Color.White, fontSize = 16.sp)
