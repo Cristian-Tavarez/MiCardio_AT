@@ -22,7 +22,9 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
+    fun provideAppDatabase(
+        @ApplicationContext context: Context
+    ): AppDatabase {
         return Room.databaseBuilder(
             context,
             AppDatabase::class.java,
@@ -32,25 +34,33 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideUsuarioDao(appDatabase: AppDatabase): UsuarioDao {
+    fun provideUsuarioDao(
+        appDatabase: AppDatabase
+    ): UsuarioDao {
         return appDatabase.usuarioDao()
     }
 
     @Provides
     @Singleton
-    fun providePacienteDao(appDatabase: AppDatabase): PacienteDao {
+    fun providePacienteDao(
+        appDatabase: AppDatabase
+    ): PacienteDao {
         return appDatabase.pacienteDao()
     }
 
     @Provides
     @Singleton
-    fun provideLoginUseCase(usuarioDao: UsuarioDao): LoginUseCase {
+    fun provideLoginUseCase(
+        usuarioDao: UsuarioDao
+    ): LoginUseCase {
         return LoginUseCase(usuarioDao)
     }
 
     @Provides
     @Singleton
-    fun provideRegisterUseCase(usuarioDao: UsuarioDao): RegisterUseCase {
+    fun provideRegisterUseCase(
+        usuarioDao: UsuarioDao
+    ): RegisterUseCase {
         return RegisterUseCase(usuarioDao)
     }
 
